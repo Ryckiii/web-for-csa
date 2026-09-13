@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 1 · Primitive Types | AP CSA 复习沙盘</title>
+<meta name="description" content="AP CSA Unit 1 可交互复习：Variables and Data Types、Expressions、Integer Division、Compound Assignment、Casting。">
+<script>
+  (function () {
+    var p = new URL(location.href).searchParams.get('theme');
+    var s = null; try { s = localStorage.getItem('apcsa-theme'); } catch (e) {}
+    var t = p || s || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<link rel="stylesheet" href="./assets/main.css">
+<link rel="stylesheet" href="./assets/sandbox.css">
+<script type="module" src="./assets/js/unit1.js"></script>
+</head>
+<body data-page="unit1">
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="bar" role="presentation"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<div class="page">
+  <header class="content site-head">
+    <p class="post-meta">AP CSA · Unit 1 · AP 占比 2.5–5% · 8–10 课时 · Skills 1.B / 2.A / 2.B / 4.B / 5.B</p>
+    <h1 class="site-title">Unit 1 · Primitive Types</h1>
+    <p class="lede">从「为什么 <code>System.out.println(2 / 3)</code> 会撒谎」讲起：variable 与四种 type、expression 求值、integer division 的 truncation、compound assignment、casting。每节一个沙盘，戳完再读讲解。</p>
+    <nav class="unit-nav" aria-label="本页目录">
+      <a class="chip" href="./index.html">⌂ 首页</a>
+      <a class="chip" href="./unit2.html">Unit 2 →</a>
+      <a class="chip" href="#s1-1">1.1 程序骨架</a>
+      <a class="chip" href="#s1-2">1.2 Variables</a>
+      <a class="chip" href="#s1-3">1.3 Expressions</a>
+      <a class="chip" href="#s1-4">1.4 Compound Assignment</a>
+      <a class="chip" href="#s1-5">1.5 Casting</a>
+      <a class="chip" href="#playground">Playground</a>
+      <a class="chip" href="#ref">速查</a>
+    </nav>
+    <div class="quiz-progress" data-quiz-progress aria-live="polite"></div>
+  </header>
+
+  <main id="main" class="content">
+
+    <!-- ==================== §1.1 ==================== -->
+    <section id="s1-1" class="reveal">
+      <h2>1.1 第一个 Java 程序 · print vs println<a class="anchor" href="#s1-1" aria-label="本节的链接">#</a></h2>
+      <p>每个 Java 程序的最小骨架都长一个样：<strong>Class 名首字母大写</strong>、<code>{}</code> 必须成对、
+        method 声明行如 <code>public static void main(String[] args) {</code> <strong>行尾不加分号</strong>，
+        而普通语句<strong>必须以 <code>;</code> 结尾</strong>，否则直接无法编译。</p>
+      <p>输出只有两条命令，区别就一个字：<code>System.out.println(...)</code> 打印后<strong>换行</strong>；
+        <code>System.out.print(...)</code> <strong>不换行</strong>，下一句接着屁股后面写。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 A · 拼出第一个程序</div>
+        <div class="viz-body">
+          <u1-puzzle></u1-puzzle>
+        </div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        注释（<code>// 行注释</code>、<code>/* 块注释 */</code>）<strong>不会</strong>被 compiler 翻译成机器语言——
+        它们只给人类看。调试题里「把注释当代码」是常见障眼法。
+      </aside>
+
+      <quiz-card qno="1-2-11" id="q-1-2-11">
+        <p class="qhead"><span class="qno">Quiz 1-2-11</span></p>
+        <p class="question">下面三行代码的输出是？</p>
+        <viz-code>
+System.out.print("Java is ");
+System.out.println("fun ");
+System.out.print("and cool!");</viz-code>
+        <ul class="options">
+          <li>Java is fun and cool!（全部挤在一行）</li>
+          <li data-correct>Java is fun ⏎<br>and cool!（fun 后面换行）</li>
+          <li>三行分别输出 Java is / fun / and cool!</li>
+          <li>编译错误</li>
+        </ul>
+        <p class="explain"><code>print</code> 不换行，所以 "Java is " 和 "fun " 连起来；
+          <code>println("fun ")</code> 结束后换行 ⏎，最后的 <code>print("and cool!")</code> 出现在<strong>下一行</strong>行首。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §1.2 ==================== -->
+    <section id="s1-2" class="reveal">
+      <h2>1.2 Variables and Data Types<a class="anchor" href="#s1-2" aria-label="本节的链接">#</a></h2>
+      <p><strong>Variable</strong> 是「与某个内存位置关联的名字」，里面装着会变的值，比如游戏里的
+        <code>int score = 0;</code>。Java 的 type 分两大阵营：
+        <strong>primitive（原始类型）</strong>——variable 里直接存值本身，AP 只考下面前三位；
+        <strong>reference type（引用类型）</strong>——variable 里存的是 object 的「地址」，代表就是 <code>String</code>。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>int</b>　<span class="en">32 bits</span><br>整数：分数、人数、年份　<code>int score = 4;</code></div>
+        <div class="fact"><b>double</b>　<span class="en">64 bits</span><br>小数：价格、温度、平均分　<code>double price = 23.25;</code></div>
+        <div class="fact"><b>boolean</b>　<span class="en">≥ 1 bit</span><br>是非：只有 <code>true</code> / <code>false</code>　<code>boolean won = false;</code></div>
+        <div class="fact"><b>String</b>　<span class="en">reference type</span><br>一段文字　<code>String name = "Sam";</code>（存的是指向字符序列的"地址"）</div>
+      </div>
+
+      <p>把值放进 variable 分两步：<strong>declaration（声明）</strong>按 type 分配内存，如 <code>int age;</code>；
+        <strong>initialization（初始化）</strong>第一次塞值，如 <code>age = 23;</code>。
+        注意 <code>double health = 8.5;</code> 这种「declaration + 赋值」合体<strong>也算 initialization</strong>。
+        命名规范：有意义、<strong>小写开头的 camelCase</strong>、大小写敏感、绝不能加引号。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 B · 「它该用什么 type？」场景抽卡</div>
+        <div class="viz-body">
+          <u1-type-game></u1-type-game>
+        </div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 B2 · declaration or initialization？点出来</div>
+        <div class="viz-body">
+          <u1-decl-game></u1-decl-game>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        Assignment 方向永远是 <code>variable = expression;</code>：<code>4 = score;</code> 直接编译错误。
+        Type 也得对得上：<code>int temperature = 70.5;</code> 拒绝编译；<code>boolean sunny = 1;</code>
+        更不行，Java 的真假只有 <code>true</code> / <code>false</code>。
+      </aside>
+
+      <quiz-card qno="1-3-20" id="q-1-3-20">
+        <p class="qhead"><span class="qno">Quiz 1-3-20</span></p>
+        <p class="question">要存储 GPA（如 3.85）和 numStudents（如 28），最合适的声明组合是？</p>
+        <ul class="options">
+          <li>int GPA; int numStudents;</li>
+          <li data-correct>double GPA; int numStudents;</li>
+          <li>double GPA; double numStudents;</li>
+          <li>String GPA; int numStudents;</li>
+        </ul>
+        <p class="explain">GPA 带小数 → <code>double</code>；人数是整数 → <code>int</code>。
+          用 <code>int</code> 存 GPA 会丢掉小数（3.85 → 3）；人数用 <code>double</code> 虽然能编译，但 type 语义不准确，考试不认。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §1.3 ==================== -->
+    <section id="s1-3" class="reveal">
+      <h2>1.3 Expressions and Assignment · Integer Division 与 %<a class="anchor" href="#s1-3" aria-label="本节的链接">#</a></h2>
+      <p>Assignment statement 的结构是 <code>variable = expression;</code>——<strong>先算右边，再装进左边</strong>，
+        如 <code>score = (10 * points) + 5;</code>。Arithmetic operator（算术运算符）有
+        <code>+ - * / %</code>，比较用 <code>==</code>（相等）、<code>!=</code>（不等）；
+        注意 <code>=</code> 是赋值、<code>==</code> 才是比较。
+        Precedence（优先级）：<code>* / %</code> 先于 <code>+ -</code>，括号最大。</p>
+      <p>这节有一个让无数考生翻车的细节：<strong>integer division 直接丢掉小数部分（truncation），不是四舍五入</strong>——
+        <code>2 / 3</code> 是 <code>0</code> 不是 <code>0.67</code>；想保住小数，
+        expression 里<strong>至少一个操作数必须是 double</strong>（比如写一个 <code>2.0</code>）。
+        另一个小怪癖：<code>x % y</code> 当 <code>x &lt; y</code> 时结果就是 <code>x</code> 自己（<code>2 % 3 = 2</code>）。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 C · Expression 实验室 ⭐</div>
+        <div class="viz-body">
+          <u1-expr></u1-expr>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        判断 expression 的 type：<strong>从下往上、逐格看两边的 type</strong>。只要某一格出现了 double，
+        这一格往上全部按小数算；全是 int 的那一格，除法 / 取模都按整数规则 truncation。这就是做题口诀。
+      </aside>
+
+      <quiz-card qno="1-4-10" id="q-1-4-10">
+        <p class="qhead"><span class="qno">Quiz 1-4-10</span></p>
+        <p class="question"><code>158 % 10</code> = ?</p>
+        <ul class="options">
+          <li>10</li>
+          <li>15.8</li>
+          <li data-correct>8</li>
+          <li>0.8</li>
+        </ul>
+        <p class="explain">158 ÷ 10 = 15 余 <strong>8</strong>。技巧：<code>% 10</code> 永远取个位数字。</p>
+      </quiz-card>
+
+      <quiz-card qno="1-4-11" id="q-1-4-11">
+        <p class="qhead"><span class="qno">Quiz 1-4-11</span></p>
+        <p class="question"><code>3 % 8</code> = ?</p>
+        <ul class="options">
+          <li>2</li>
+          <li data-correct>3</li>
+          <li>0</li>
+          <li>编译错误</li>
+        </ul>
+        <p class="explain">3 ÷ 8 = 0 余 <strong>3</strong>。当 <code>x &lt; y</code> 时，<code>x % y</code> 的结果就是 x 自己——商是 0，整个 x 都变成余数留下来。</p>
+      </quiz-card>
+
+      <quiz-card qno="1-4-3" id="q-1-4-3">
+        <p class="qhead"><span class="qno">Quiz 1-4-3</span></p>
+        <p class="question">执行完下面的代码后，x、y、z 的值各是多少？</p>
+        <viz-code>
+int x = 0, y = 1, z = 2;
+x = y;
+y = y * 2;
+z = 3;</viz-code>
+        <ul class="options">
+          <li>x = 0, y = 2, z = 3</li>
+          <li data-correct>x = 1, y = 2, z = 3</li>
+          <li>x = 1, y = 4, z = 2</li>
+          <li>x = 2, y = 2, z = 3</li>
+        </ul>
+        <p class="explain">赋值是「拷贝值」，不是绑定：<code>x = y;</code> 后 x 变成 1（y 后来的变化与 x 无关）。
+          然后 y = 1 × 2 = 2，z 被直接改写为 3。追踪 variable 就一行一行往下抄当前值。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §1.4 ==================== -->
+    <section id="s1-4" class="reveal">
+      <h2>1.4 Compound Assignment Operators<a class="anchor" href="#s1-4" aria-label="本节的链接">#</a></h2>
+      <p>「运算 + 赋值」可以一步写完（shortcut）：
+        <code>x = x + 1;</code> ≡ <code>x += 1;</code> ≡ <code>x++;</code>（<code>++/--</code> 步长固定为 1）；
+        同理 <code>-= *= /= %=</code>。展开规则永远成立：<code>x op= v</code> ≡ <code>x = x op v</code>，
+        所以 compound assignment 也一样逃不出 integer division 的手掌心。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 D · 步进：score 是怎么一步步变成 0 的</div>
+        <div class="viz-body">
+          <u1-stepper>
+            <div class="split">
+              <div>
+                <viz-code>
+int score = 0;
+System.out.println(score);
+score++;
+System.out.println(score);
+score *= 2;
+System.out.println(score);
+int penalty = 5;
+score -= penalty / 2;
+System.out.println(score);</viz-code>
+              </div>
+              <div>
+                <div class="mem-grid">
+                  <mem-box name="score" value="？"></mem-box>
+                  <mem-box name="penalty" value="？"></mem-box>
+                </div>
+                <viz-console title="Console"></viz-console>
+                <div class="note-chip">点 ▶ 开始逐行执行，也可以按 ← → 方向键</div>
+              </div>
+            </div>
+          </u1-stepper>
+        </div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        <code>score -= penalty / 2;</code> 展开是 <code>score = score - (penalty / 2)</code>：
+        <strong>右边 expression 先完整求值</strong>，而 <code>penalty / 2</code> 两边都是 int →
+        <code>5 / 2 = 2</code>。考试里这就是最终答案是 <code>0</code> 而不是 <code>-0.5</code> 的原因。
+      </aside>
+
+      <quiz-card qno="1-5-3" id="q-1-5-3">
+        <p class="qhead"><span class="qno">Quiz 1-5-3</span></p>
+        <p class="question">执行完下面的代码后，x、y、z 的值？</p>
+        <viz-code>
+int x = 3, y = 5, z = 2;
+x = z * 2;
+y = y / 2;
+z++;</viz-code>
+        <ul class="options">
+          <li>x = 4, y = 2.5, z = 3</li>
+          <li>x = 6, y = 2, z = 3</li>
+          <li data-correct>x = 4, y = 2, z = 3</li>
+          <li>x = 4, y = 2, z = 2</li>
+        </ul>
+        <p class="explain">x = 2 × 2 = 4；y 是 <strong>int</strong>，<code>5 / 2</code> 走 integer division = <strong>2</strong>（不是 2.5！）；
+          <code>z++;</code> 让 z = 3。凡是「追踪值」的题，先把每个 variable 的 type 圈出来。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §1.5 ==================== -->
+    <section id="s1-5" class="reveal">
+      <h2>1.5 Casting and Ranges of Variables<a class="anchor" href="#s1-5" aria-label="本节的链接">#</a></h2>
+      <p><strong>Casting（类型转换）</strong>写法是 <code>(目标 type) 值</code>，
+        结果的 type 就是你写的那个目标 type。它的成名时刻是救回 integer division 的精度——
+        但前提是 <strong>cast 要写在运算发生之前</strong>：<code>(double)(5000 / 110)</code> 救不回来，
+        <code>(double) 5000 / 110</code> 才行。四舍五入的标准技巧：正数
+        <code>(int)(number + 0.5)</code>，负数 <code>(int)(negNumber - 0.5)</code>。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 E · Casting 对照台：两条流水线</div>
+        <div class="viz-body">
+          <u1-cast-duel></u1-cast-duel>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        判断正误：Java 的 integer division <strong>不会</strong>自动四舍五入（Quiz 1-6-5 直接考这句）；
+        casting 的结果也<strong>不一定是 double</strong>（1-6-6）——结果的 type 永远等于你写的目标 type，
+        转不了会直接报错。char 与 int 可以互转，所以 <code>(char) 65</code> 能得到 <code>'A'</code>。
+      </aside>
+
+      <quiz-card qno="1-6-7" id="q-1-6-7">
+        <p class="qhead"><span class="qno">Quiz 1-6-7</span></p>
+        <p class="question">三个 int 成绩的总和是 <code>total</code>，下面哪个 expression 能算出<strong>正确的平均值</strong>（保留小数）？</p>
+        <ul class="options">
+          <li>total / 3</li>
+          <li>(double)(total / 3)</li>
+          <li data-correct>(double) total / 3</li>
+          <li>(int)(total / 3.0)</li>
+        </ul>
+        <p class="explain">A：两边都是 int，先 integer division 丢精度。B：括号里除完才 cast，丢掉的找不回来
+          （板书：<code>(double)(7 / 2)</code> → <code>3.0</code>，不是 3.5）。
+          C ✓：先把 total 变成 double，除法按小数算。D：虽然 <code>3.0</code> 救回了小数运算，
+          但最后 <code>(int)</code> 又把小数砍掉了。</p>
+      </quiz-card>
+
+      <quiz-card qno="1-6-5" id="q-1-6-5">
+        <p class="qhead"><span class="qno">Quiz 1-6-5 · 判断</span></p>
+        <p class="question">对还是错：Java 的 integer division 会自动把结果四舍五入。</p>
+        <ul class="options">
+          <li>true</li>
+          <li data-correct>false</li>
+        </ul>
+        <p class="explain">integer division 永远 <strong>truncation</strong>（直接向零靠拢）：<code>7 / 2 = 3</code>、
+          <code>-7 / 2 = -3</code>。想手动实现四舍五入：正数 <code>(int)(number + 0.5)</code>、负数
+          <code>(int)(number − 0.5)</code>。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== Playground ==================== -->
+    <section id="playground" class="reveal">
+      <h2>🎮 Playground · 自由 Expression 实验台<a class="anchor" href="#playground" aria-label="本节的链接">#</a></h2>
+      <p>课上学到的规则都在这儿了，随便敲：数字带不带 <code>.0</code>、operator 混着用、括号随便套。
+        盯着每一步的 <code>int</code>/<code>double</code> 标签——能预判每一步的 type 和结果，这单元就过关了。</p>
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>自由模式 · 输入你自己的 expression</div>
+        <div class="viz-body">
+          <u1-expr free></u1-expr>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 速查 ==================== -->
+    <section id="ref" class="reveal">
+      <h2>📋 本页题目速查<a class="anchor" href="#ref" aria-label="本节的链接">#</a></h2>
+      <p>本页全部 Quiz 卡一览。点 <strong>Go</strong> 直接跳到对应题卡重做——刷新页面后所有题目都会重置。</p>
+
+      <table class="ref">
+        <thead><tr><th>题号</th><th>题目大意</th><th>考查知识点</th><th>Go</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1-2-11</td><td>print / println 混合使用的换行输出</td><td>print 不换行、println 换行</td><td><a class="chip" href="#q-1-2-11">Go</a></td></tr>
+          <tr><td class="mono">1-3-20</td><td>GPA 与 numStudents 的声明组合</td><td>按数据特征选 type（double / int）</td><td><a class="chip" href="#q-1-3-20">Go</a></td></tr>
+          <tr><td class="mono">1-4-10</td><td><span class="mono">158 % 10</span> 的值</td><td>modulo 求余数（% 10 取个位）</td><td><a class="chip" href="#q-1-4-10">Go</a></td></tr>
+          <tr><td class="mono">1-4-11</td><td><span class="mono">3 % 8</span> 的值</td><td>x &lt; y 时 x % y = x</td><td><a class="chip" href="#q-1-4-11">Go</a></td></tr>
+          <tr><td class="mono">1-4-3</td><td>连续赋值后追踪 x/y/z</td><td>assignment 是拷贝值、逐行追踪 variable</td><td><a class="chip" href="#q-1-4-3">Go</a></td></tr>
+          <tr><td class="mono">1-5-3</td><td>含 z++ 的赋值追踪</td><td>compound assignment + integer division</td><td><a class="chip" href="#q-1-5-3">Go</a></td></tr>
+          <tr><td class="mono">1-6-7</td><td>三个 int 求正确平均值</td><td>casting 的位置决定精度</td><td><a class="chip" href="#q-1-6-7">Go</a></td></tr>
+          <tr><td class="mono">1-6-5</td><td>判断：整数除法自动四舍五入？</td><td>integer division 永远 truncation</td><td><a class="chip" href="#q-1-6-5">Go</a></td></tr>
+        </tbody>
+      </table>
+
+      <p style="text-align:center;margin-top:2rem">
+        <a class="btn" style="display:inline-block;padding:.6rem 1.4rem;border-radius:8px;background:var(--btn-bg);color:#fff;text-decoration:none" href="./unit2.html">Unit 2 · Using Objects →</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span>内容整理自 Akash S. Pathak 的 AP CSA 课堂笔记（Slide 1–51）· 仅供学习复习</span>
+    <button class="btn-ghost" type="button" data-theme-toggle>🌙 Dark</button>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AP CSA 复习沙盘 · Explorable Notes</title>
+<meta name="description" content="把 AP Computer Science A Unit 1–2 的考点做成可以上手玩的小沙盘，边玩边复习。">
+<script>
+  // 防主题闪烁：URL 参数 > localStorage > 系统偏好
+  (function () {
+    var p = new URL(location.href).searchParams.get('theme');
+    var s = null;
+    try { s = localStorage.getItem('apcsa-theme'); } catch (e) {}
+    var t = p || s || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<link rel="stylesheet" href="./assets/main.css">
+<script type="module" src="./assets/js/home.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="bar" role="presentation"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<div class="page">
+  <header class="content site-head">
+    <p class="post-meta">AP Computer Science A · 可玩的复习笔记</p>
+    <h1 class="site-title">把考点做成沙盘，<br>让每一个坑都能上手戳一戳</h1>
+    <p class="lede">这里不是讲义，是 <em>explorable notes</em>——每个知识点旁边都有一个可以钻进手里的小沙盘。先玩，再看讲解，最后用 Quiz 验货。灵感来自 <a href="https://samwho.dev" target="_blank" rel="noopener">samwho.dev</a>。</p>
+    <nav class="unit-nav" aria-label="单元导航">
+      <a class="chip" href="./unit1.html">Unit 1 · Primitive Types</a>
+      <a class="chip" href="./unit2.html">Unit 2 · Using Objects</a>
+      <a class="chip" href="#how">怎么用？</a>
+    </nav>
+  </header>
+
+  <main id="main" class="content">
+
+    <div class="cards">
+      <!-- ============ Unit 1 卡片 ============ -->
+      <a class="card reveal" href="./unit1.html">
+        <div class="card-hero">
+          <viz-console id="u1-term" title="jshell · 会撒谎的计算器"></viz-console>
+        </div>
+        <div class="card-body">
+          <p class="meta">AP 占比 2.5–5% · 8–10 课时 · Skills 1.B / 2.A / 2.B</p>
+          <h3>Unit 1 · Primitive Types 原始类型</h3>
+          <ul class="toc">
+            <li>拼图还原第一个 Java 程序，亲手切换 print / println</li>
+            <li>「GPA 该用什么类型？」——点选游戏 + 内存位宽抽屉</li>
+            <li>表达式沙盘：看 2/3 的小数尾巴被截断、向上飘散</li>
+            <li>复合赋值步进器：score 是怎么一步步变成 0 的</li>
+            <li>Casting 对照台：5000/110 的两条流水线</li>
+          </ul>
+          <span class="go">进入 Unit 1</span>
+        </div>
+      </a>
+
+      <!-- ============ Unit 2 卡片 ============ -->
+      <a class="card reveal" href="./unit2.html">
+        <div class="card-hero">
+          <svg class="conv" viewBox="0 0 320 120" role="img" aria-label="new Human() 在传送带上不断压出对象饼干">
+            <line class="belt" x1="14" y1="92" x2="306" y2="92"></line>
+            <g class="tube">
+              <rect x="228" y="10" width="10" height="26" rx="4" fill="var(--viz-grey)"></rect>
+            </g>
+            <g class="mold">
+              <rect x="212" y="30" width="42" height="34" rx="9" fill="var(--viz-8)" stroke="var(--border-strong)"></rect>
+              <text x="233" y="51" text-anchor="middle" font-size="11" fill="#fff" font-family="ui-monospace,monospace">new</text>
+            </g>
+            <circle class="pop" cx="233" cy="76" r="14"></circle>
+            <g class="cookie k1"><circle cx="233" cy="76" r="12" fill="var(--viz-2)"></circle><circle cx="229" cy="73" r="2" fill="var(--viz-5)"></circle><circle cx="237" cy="79" r="2" fill="var(--viz-5)"></circle></g>
+            <g class="cookie k2"><circle cx="233" cy="76" r="12" fill="var(--viz-3)"></circle><circle cx="229" cy="73" r="2" fill="var(--viz-5)"></circle><circle cx="237" cy="79" r="2" fill="var(--viz-5)"></circle></g>
+            <g class="cookie k3"><circle cx="233" cy="76" r="12" fill="var(--viz-1)"></circle><circle cx="229" cy="73" r="2" fill="var(--viz-5)"></circle><circle cx="237" cy="79" r="2" fill="var(--viz-5)"></circle></g>
+          </svg>
+        </div>
+        <div class="card-body">
+          <p class="meta">AP 占比 5–7.5% · 13–15 课时 · Skills 1.C / 2.C / 3.A</p>
+          <h3>Unit 2 · Using Objects 使用对象</h3>
+          <ul class="toc">
+            <li>饼干模具：填属性，new 一下，哐当落一块对象</li>
+            <li>栈与堆动画：引用箭头 → a = null → NullPointerException</li>
+            <li>签名匹配判定：哪些 new 能编译？</li>
+            <li>执行流步进器：跟着高亮行跳进方法体</li>
+            <li>static 对照实验：count() 的 1 1 1 1 vs 1 2 3 4</li>
+          </ul>
+          <span class="go">进入 Unit 2</span>
+        </div>
+      </a>
+    </div>
+
+    <section id="how" class="reveal">
+      <h2 id="how-title">怎么用这两个页面？<a class="anchor" href="#how-title" aria-label="本节的链接">#</a></h2>
+      <ol>
+        <li><strong>先玩沙盘，再读讲解。</strong>每节都是先让你动手戳出问题（比如 <code>2/3</code> 为什么是 <code>0</code>），讲解只是把你在沙盘里看到的事说清楚。</li>
+        <li><strong>Quiz 认「首试」。</strong>每节末尾的小题卡只记录你<em>第一次</em>点选的成绩；答错了可以无限重试，页顶进度条随时看。进度存在会话里——刷新页面即可全部重做。</li>
+        <li><strong>考前最后一眼翻速查表。</strong>每个单元末尾的折叠表收录了课件里<em>全部</em>题目与答案，包括没做成 Quiz 卡的那些。</li>
+      </ol>
+    </section>
+
+    <section class="reveal">
+      <h2 id="taste">先戳一题试试手感<a class="anchor" href="#taste" aria-label="本节的链接">#</a></h2>
+      <quiz-card qno="DEMO">
+        <p class="qhead"><span class="qno">热身题</span></p>
+        <p class="question">下面这行 Java 代码的输出是什么？</p>
+        <viz-code>System.out.println(2 / 3);</viz-code>
+        <ul class="options">
+          <li>0.6666666666666666</li>
+          <li data-correct>0</li>
+          <li>0.67</li>
+          <li>编译错误</li>
+        </ul>
+        <p class="explain">两个操作数都是 <code>int</code>，Java 走<strong>整数除法</strong>：2 ÷ 3 = 0 余 2，商 <code>0</code>，小数部分直接丢掉（不是四舍五入！）。想保留小数，至少让一个操作数成为 <code>double</code>，比如 <code>2.0 / 3</code>。这是 Unit 1 §1.3 全站最大的坑。</p>
+      </quiz-card>
+      <p class="hint">答错没关系，继续点；题卡会记住你的「首试」成绩并写进本地进度。正式题目比这多得多，都在 <a href="./unit1.html">Unit 1</a> / <a href="./unit2.html">Unit 2</a> 里。</p>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span>内容整理自 Akash S. Pathak 的 AP CSA 课堂笔记 · 仅供学习复习 · 设计致敬 <a href="https://samwho.dev" target="_blank" rel="noopener">samwho.dev</a></span>
+    <button class="btn-ghost" type="button" data-theme-toggle>🌙 Dark</button>
+  </footer>
+</div>
+</body>
+</html>

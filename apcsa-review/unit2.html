@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 2 · Using Objects | AP CSA 复习沙盘</title>
+<meta name="description" content="AP CSA Unit 2 可交互复习：Class and Object、Constructor、Stack and Heap、Method calls、Static。">
+<script>
+  (function () {
+    var p = new URL(location.href).searchParams.get('theme');
+    var s = null; try { s = localStorage.getItem('apcsa-theme'); } catch (e) {}
+    var t = p || s || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<link rel="stylesheet" href="./assets/main.css">
+<link rel="stylesheet" href="./assets/sandbox.css">
+<script type="module" src="./assets/js/unit2.js"></script>
+</head>
+<body data-page="unit2">
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="bar" role="presentation"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<div class="page">
+  <header class="content site-head">
+    <p class="post-meta">AP CSA · Unit 2 · AP 占比 5–7.5% · 13–15 课时 · Skills 1.C / 2.C / 3.A / 5.A · 本课覆盖 2.1–2.5</p>
+    <h1 class="site-title">Unit 2 · Using Objects</h1>
+    <p class="lede">Class 是蓝图、Object 是实例。<code>new Human()</code> 一按，stack 里的 reference 就拉线指向 heap；<code>null</code> 一赋值线就断；再调 method——砰，<code>NullPointerException</code>。这一单元把这套心智模型玩到条件反射为止。</p>
+    <nav class="unit-nav" aria-label="本页目录">
+      <a class="chip" href="./index.html">⌂ 首页</a>
+      <a class="chip" href="./unit1.html">← Unit 1</a>
+      <a class="chip" href="#s2-1">2.1 Class &amp; Object</a>
+      <a class="chip" href="#s2-2">2.2 Constructor</a>
+      <a class="chip" href="#s2-3">2.3 调 method</a>
+      <a class="chip" href="#s2-4">2.4 参数与 overloading</a>
+      <a class="chip" href="#s2-5">2.5 non-void &amp; static</a>
+      <a class="chip" href="#playground">Playground</a>
+      <a class="chip" href="#ref">速查</a>
+    </nav>
+    <div class="quiz-progress" data-quiz-progress aria-live="polite"></div>
+  </header>
+
+  <main id="main" class="content">
+
+    <!-- ==================== §2.1 ==================== -->
+    <section id="s2-1" class="reveal">
+      <h2>2.1 Class 是蓝图，Object 是实例<a class="anchor" href="#s2-1" aria-label="本节的链接">#</a></h2>
+      <p><strong>Class</strong> 是 object 的<strong>蓝图（blueprint）</strong>：它正式定义了一类事物的
+        <strong>attributes（属性，即 instance variable）</strong>和 <strong>behaviors（行为，即 method）</strong>。
+        <strong>Object</strong> 是 class 的具体实例（instance）——带着确定的属性值。
+        就像课件里的类比：<em>饼干模具是 class，压出来的每一块饼干是 object；"akash" 是 Human 这个 class 的一个 object。</em></p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>class</b><br>定义了一种新数据类型——blueprint 本身</div>
+        <div class="fact"><b>object</b><br>class 的 specific instance，带确定的 attributes</div>
+        <div class="fact"><b>attributes / instance variables</b><br>定义 object <strong>knows about itself</strong>（name、age…）</div>
+        <div class="fact"><b>behaviors / methods</b><br>定义 object <strong>能做什么</strong>（walk()、showInformation()…）</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 A · 饼干模具：每 new 一次，object +1</div>
+        <div class="viz-body">
+          <u2-instantiator></u2-instantiator>
+        </div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        Instance variable 必须写在<strong>所有 method 外面</strong>（class 体里直接声明）。
+        在课件 Calculator 示例里，如果 <code>int num1;</code> 写进了某个 method，其他 method 就找不到它了——那是 local variable，不是 instance variable。
+      </aside>
+
+      <quiz-card qno="2-1-3" multi id="q-2-1-3">
+        <p class="qhead"><span class="qno">Quiz 2-1-3 · 选全部正确项</span></p>
+        <p class="question">课堂原题是「定义配对」。下面四条说法里，<strong>配对正确</strong>的是哪两条？</p>
+        <ul class="options">
+          <li data-correct>class = 创建 object 的 blueprint，定义了一种新的数据类型</li>
+          <li>一个 class 最多只能 new 出 10 个 object</li>
+          <li>methods 定义「object 知道自己什么」</li>
+          <li data-correct>object = class 的具体 instance，带着确定的 attribute 值</li>
+        </ul>
+        <p class="explain">methods 定义的是 object<strong>能做什么</strong>；"知道自己什么"是 <strong>attributes / instance variables</strong> 的活儿。object 数量没有任何上限——想 new 多少都行（Quiz 2-1-4 马上考这句）。</p>
+      </quiz-card>
+
+      <quiz-card qno="2-1-4" id="q-2-1-4">
+        <p class="qhead"><span class="qno">Quiz 2-1-4</span></p>
+        <p class="question">一个 class 能创建多少个 object？</p>
+        <ul class="options">
+          <li>只能 1 个</li>
+          <li>最多 10 个</li>
+          <li>2 个备选 constructor，就 2 个</li>
+          <li data-correct>想要多少个都行</li>
+        </ul>
+        <p class="explain">刚才沙盘里你也 new 了好几个了——模具只此一个，饼干随便压。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §2.2 ==================== -->
+    <section id="s2-2" class="reveal">
+      <h2>2.2 Constructor · Signature · Stack &amp; Heap<a class="anchor" href="#s2-2" aria-label="本节的链接">#</a></h2>
+      <p><strong>Constructor</strong> 是特殊 method，记住四条：<strong>① 名字 = class 名；② 没有 return type
+        （连 <code>void</code> 都不写）；③ <code>new</code> 的时候自动调用；④ 可以不带参（默认空参版本）也可以带参，
+        同名不同 signature = overloading。</strong>带参 constructor 头部的参数叫
+        <strong>formal parameters（形式参数）</strong>，调用时传进去的值叫
+        <strong>actual parameters（实际参数）</strong>；Java 是 <strong>call by value</strong>——formal parameter 拿到的是 actual parameter 的副本。
+        参数与 instance variable 同名时用 <code>this.xxx</code> 指代"正在出生的这个 object"自己的变量。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 B · Stack &amp; Heap：看 reference 箭头 ⭐</div>
+        <div class="viz-body">
+          <u2-memory>
+            <viz-code>
+Human a = new Human("Akash", 37, 5.5);
+Human d = new Human("David", 17, 5.7);
+a.walk();
+a = null;
+a.walk();</viz-code>
+            <div class="mem-area">
+              <div class="mem-pane" id="stackPane"><h4>Stack（reference variable 住这）</h4><div class="stack-frame"><b>main(String[] args)</b></div></div>
+              <div class="mem-pane" id="heapPane"><h4>Heap（object 住这）</h4></div>
+            </div>
+            <div class="npe-banner">💥 NullPointerException——程序在 Human.java:24 崩掉了（exit code 1）</div>
+            <viz-console title="Terminal · java Human"></viz-console>
+            <p class="note-chip">点 ▶ 逐行执行：重点看 reference 箭头，和 a = null 之后再调 method 发生了什么</p>
+          </u2-memory>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        <code>null</code> 表示 reference <strong>不指向任何 object</strong>。对 null 调任何 method 都是运行期
+        <strong>NullPointerException</strong>（程序直接崩，exit code 1）——AP 2.B/5.B 最爱考这张红屏。
+        判定点永远是：这个 reference variable <strong>现在</strong>指向谁？
+      </aside>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 C · constructor 的 signature 匹配判定</div>
+        <div class="viz-body">
+          <u2-signature kind="ctor"></u2-signature>
+        </div>
+      </div>
+
+      <quiz-card qno="2-2-14" id="q-2-2-14">
+        <p class="qhead"><span class="qno">Quiz 2-2-14</span></p>
+        <p class="question">Cat class 有两个 constructor：<code>Cat(String name, int age)</code> 和 <code>Cat(int age)</code>。下面哪些能成功创建 object？<br>
+          <span style="font-weight:400;font-size:.9em">Ⅰ. <code>new Cat("Tom", 3)</code>　Ⅱ. <code>new Cat("Tom")</code>　Ⅲ. <code>new Cat(3)</code></span></p>
+        <ul class="options">
+          <li>仅 Ⅰ</li>
+          <li>Ⅰ 和 Ⅱ</li>
+          <li data-correct>Ⅰ 和 Ⅲ</li>
+          <li>Ⅰ、Ⅱ、Ⅲ 都行</li>
+        </ul>
+        <p class="explain">Ⅰ 匹配 <code>Cat(String, int)</code> ✓；Ⅱ 找不到只收一个 String 的 constructor ✗；Ⅲ 匹配 <code>Cat(int)</code> ✓。和上面沙盘的判定是同一件事。</p>
+      </quiz-card>
+
+      <quiz-card qno="2-2-15" id="q-2-2-15">
+        <p class="qhead"><span class="qno">Quiz 2-2-15</span></p>
+        <p class="question">Movie class 的 constructor 是 <code>Movie(String title, String studio, double rating)</code>。
+          要构造一部 title = "Lion King"、rating = 8.0 的电影，正确的是？</p>
+        <ul class="options">
+          <li>new Movie("Lion King", 8.0, "Disney")</li>
+          <li>new Movie("Lion King", 8.0)</li>
+          <li>new Movie(8.0, "Disney", "Lion King")</li>
+          <li data-correct>new Movie("Lion King", "Disney", 8.0)</li>
+        </ul>
+        <p class="explain">Actual parameter 的<strong>顺序</strong>必须严格对齐 formal parameter：String → String → double。
+          顺序反了（A、C）或参数不够（B），全都过不了编译。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §2.3 ==================== -->
+    <section id="s2-3" class="reveal">
+      <h2>2.3 调用 void method：顺序执行被打断<a class="anchor" href="#s2-3" aria-label="本节的链接">#</a></h2>
+      <p>无参 non-static method 用 <strong>dot operator（点运算符）</strong>调用：<code>object.方法名()</code>。
+        Method 调用会<strong>打断顺序执行</strong>：控制流跳进 method body，一行行执行完（或遇到 <code>return</code>），
+        再<strong>回到调用点的下一行</strong>继续。理解了这条，"输出顺序"类题目（AP Skill 2.C）就是白送的。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 D · 执行流：跟着高亮行跳进 method body</div>
+        <div class="viz-body">
+          <u2-callflow>
+            <div class="cstack"></div>
+            <div class="split">
+              <div class="paper"><h6>main method</h6>
+                <viz-code id="codeMain">
+Human rin = new Human("Rin");
+rin.displayInformation();
+Human ken = new Human("Ken");
+ken.displayInformation();
+System.out.println("done");</viz-code>
+              </div>
+              <div class="paper"><h6>displayInformation() 的 method body（Human class 里）</h6>
+                <viz-code id="codeM">
+System.out.println(name + " 的信息：");
+System.out.println("  age = " + age);</viz-code>
+              </div>
+            </div>
+            <viz-console title="Console"></viz-console>
+            <p class="note-chip">点 ▶：看调用栈的 frame 怎么推入（调用）、怎么弹出（执行完回来）</p>
+          </u2-callflow>
+        </div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        <code>main</code> 是 <strong>static</strong> method，它里面<strong>不能直接调 instance method</strong>——必须先 <code>new</code> 一个 object 再用点运算符。
+        反过来，class 里各 instance method 之间互调不需要 object，直接写方法名就行（省略了 this.）。
+      </aside>
+
+      <quiz-card qno="2-3-8" id="q-2-3-8">
+        <p class="qhead"><span class="qno">Quiz 2-3-8</span></p>
+        <p class="question">Party class 有一个无参 void method <code>cancelParty()</code>；main 里已有 <code>Party myParty = new Party();</code>。合法的调用是？</p>
+        <ul class="options">
+          <li data-correct>myParty.cancelParty();</li>
+          <li>cancelParty(myParty);</li>
+          <li>myParty.cancelParty(5);</li>
+          <li>Party.myParty.cancelParty();</li>
+        </ul>
+        <p class="explain">Non-static method = 用 object 点出来：<code>object.method()</code>。<code>cancelParty(5)</code> 参数数量不匹配（无参 method）。</p>
+      </quiz-card>
+
+      <quiz-card qno="2-3-9" id="q-2-3-9">
+        <p class="qhead"><span class="qno">Quiz 2-3-9</span></p>
+        <p class="question"><code>meow()</code> 打印 "Meow "，<code>purr()</code> 打印 "purr "。哪个片段打印 <code>Meow purr</code>？</p>
+        <ul class="options">
+          <li>a.meow();</li>
+          <li>a.purr(); a.meow();</li>
+          <li data-correct>a.meow(); a.purr();</li>
+          <li>meow(a); purr(a);</li>
+        </ul>
+        <p class="explain">Method 按调用顺序一个个执行：<code>meow</code> 先 → "Meow "，<code>purr</code> 后 → "purr "。
+          D 连调用语法都不对。</p>
+      </quiz-card>
+
+      <quiz-card qno="2-13-5" id="q-2-13-5">
+        <p class="qhead"><span class="qno">Quiz 2-13-5</span></p>
+        <p class="question">Liquid class 有无参 void method <code>freeze()</code>；<code>liquid</code> 是已创建好的 object。合法语句是？</p>
+        <ul class="options">
+          <li>freeze(liquid);</li>
+          <li>Liquid.freeze();</li>
+          <li>liquid.freeze;</li>
+          <li data-correct>liquid.freeze();</li>
+        </ul>
+        <p class="explain">同 2-3-8：object + 点 + 方法名 + 括号分号。用 class 名调用（如 <code>Liquid.freeze()</code>）只适用于 static method（§2.5 见）。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §2.4 ==================== -->
+    <section id="s2-4" class="reveal">
+      <h2>2.4 带参的 method 与 overloading<a class="anchor" href="#s2-4" aria-label="本节的链接">#</a></h2>
+      <p>带参 method 的 <strong>signature = 方法名 + 有序的参数 type 列表</strong>；调用时 actual parameter 的
+        <strong>顺序和类型</strong>都必须匹配。<strong>Overloading</strong> = 同一个 class 中同名 method、signature 不同，
+        compiler 靠 actual parameter 的 type 自己挑一个。参数名不是 signature 的一部分。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 C · overloading 调用判定（method 版）</div>
+        <div class="viz-body">
+          <u2-signature kind="method"></u2-signature>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        自问式检查：<em>每个位置各要什么 type，我给了什么 type？</em>
+        <code>int</code> 塞给 <code>String</code> → <code>incompatible types</code>；
+        <code>double</code> 塞给 <code>int</code> → <code>possible lossy conversion</code>。
+        报错文案背下来，选择题秒答。
+      </aside>
+
+      <quiz-card qno="2-4-6" id="q-2-4-6">
+        <p class="qhead"><span class="qno">Quiz 2-4-6</span></p>
+        <p class="question"><code>square(5)</code> 返回 25、<code>divide(4, 2)</code> 返回 2（都是 int）。这行打印什么？</p>
+        <viz-code>System.out.println(square(5) + " and " + divide(4, 2));</viz-code>
+        <ul class="options">
+          <li data-correct>25 and 2</li>
+          <li>29 and 2</li>
+          <li>square(5) and divide(4, 2)</li>
+          <li>27</li>
+        </ul>
+        <p class="explain">中间是 String，+ 变成<strong>拼接</strong>：25 + " and " = "25 and "，再拼 2 = "25 and 2"。
+          全是数字时 <code>+</code> 才做加法（下一题对比）。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §2.5 ==================== -->
+    <section id="s2-5" class="reveal">
+      <h2>2.5 non-void method · static<a class="anchor" href="#s2-5" aria-label="本节的链接">#</a></h2>
+      <p><strong>Non-void method 会 return 一个值</strong>（int / double / String…），调用时通常要用 variable 接住：
+        <code>int ans = c2.add(5, 5);</code>。<strong>Static</strong> method / variable 属于 <strong>class</strong> 而不是任何 object：
+        内存中<strong>只有一份</strong>、全体 object 共享，调用写 <code>类名.方法名()</code>（如 <code>Math.random()</code>）。</p>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 E · instance method vs static method ⭐</div>
+        <div class="viz-body">
+          <viz-code>
+class Cal {
+    int x = 0;                   // instance variable：每个 object 各自一份
+    void count()  { x = x + 1; System.out.println(x); }
+    static int num = 0;          // static variable：全 class 共享一份
+    static void count_static() { num = num + 1; System.out.println(num); }
+}</viz-code>
+          <u2-static></u2-static>
+        </div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        选择题信号词："这份数据<strong>所有 object 共享</strong> / 属于 class 而不属于 object" → 99% 在考 <code>static</code>。
+        反之问"每个 object 自己一份"就是 instance variable。
+      </aside>
+
+      <quiz-card qno="2-5-4" id="q-2-5-4">
+        <p class="qhead"><span class="qno">Quiz 2-5-4</span></p>
+        <p class="question"><code>square(2)</code> 返回 int 4、<code>divide(6, 2)</code> 返回 int 3。这行打印什么？</p>
+        <viz-code>System.out.println(square(2) + divide(6, 2));</viz-code>
+        <ul class="options">
+          <li>4 and 3</li>
+          <li data-correct>7</li>
+          <li>43</li>
+          <li>编译错误</li>
+        </ul>
+        <p class="explain">两边都是 int 返回值，中间的 <code>+</code> 做<strong>加法</strong>：4 + 3 = 7。
+          和 2-4-6 放一起看：有没有 String 参战，<code>+</code> 的语义完全不同。</p>
+      </quiz-card>
+
+      <quiz-card qno="2-5-5" id="q-2-5-5">
+        <p class="qhead"><span class="qno">Quiz 2-5-5</span></p>
+        <p class="question">Method 声明 <code>double calculatePizzaBoxes(int people, double perPerson)</code>。
+          哪个调用既能编译、又正确接住了 return value？</p>
+        <ul class="options">
+          <li>calculatePizzaBoxes(45, 9.0);</li>
+          <li>int result = calculatePizzaBoxes(45, 9.0);</li>
+          <li>double result = calculatePizzaBoxes(9.0, 45);</li>
+          <li data-correct>double result = calculatePizzaBoxes(45, 9.0);</li>
+        </ul>
+        <p class="explain">B：<code>double</code> 返回值塞进 <code>int</code> → lossy conversion，编译失败。
+          C：参数顺序反了，45 是 int 不是 double 位置。A 语法上能跑，但 return value 被扔掉了——考试问"正确调用"选 D。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== Playground ==================== -->
+    <section id="playground" class="reveal">
+      <h2>🎮 Playground · signature 判定综合场<a class="anchor" href="#playground" aria-label="本节的链接">#</a></h2>
+      <p>Constructor 和 method 混在一起、五个 signature 挂墙上——能把六个调用全部判对（包括那个讨厌的
+        <code>new Human(32, "Adam", 75)</code>），2.2 和 2.4 就可以划掉了。</p>
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>综合判定场 · 全部判对算你赢</div>
+        <div class="viz-body">
+          <u2-signature kind="mix"></u2-signature>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 速查 ==================== -->
+    <section id="ref" class="reveal">
+      <h2>📋 本页题目速查<a class="anchor" href="#ref" aria-label="本节的链接">#</a></h2>
+      <p>本页全部 Quiz 卡一览。点 <strong>Go</strong> 直接跳到对应题卡重做——刷新页面后所有题目都会重置。</p>
+
+      <table class="ref">
+        <thead><tr><th>题号</th><th>题目大意</th><th>考查知识点</th><th>Go</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2-1-3</td><td>class / object / attribute / method 定义配对</td><td>core 4 术语的精确含义</td><td><a class="chip" href="#q-2-1-3">Go</a></td></tr>
+          <tr><td class="mono">2-1-4</td><td>一个 class 能创建几个 object？</td><td>instance 数量无上限</td><td><a class="chip" href="#q-2-1-4">Go</a></td></tr>
+          <tr><td class="mono">2-2-14</td><td>Cat 两个 constructor 下哪些 new 成立</td><td>constructor 重载与 signature 匹配</td><td><a class="chip" href="#q-2-2-14">Go</a></td></tr>
+          <tr><td class="mono">2-2-15</td><td>构造指定 Movie 的正确写法</td><td>actual parameter 顺序对齐 formal parameter</td><td><a class="chip" href="#q-2-2-15">Go</a></td></tr>
+          <tr><td class="mono">2-3-8</td><td>无参 void method 的合法调用</td><td>object.method() 的点运算符语法</td><td><a class="chip" href="#q-2-3-8">Go</a></td></tr>
+          <tr><td class="mono">2-3-9</td><td>哪个片段打印 "Meow purr"</td><td>method 调用顺序决定输出顺序</td><td><a class="chip" href="#q-2-3-9">Go</a></td></tr>
+          <tr><td class="mono">2-13-5</td><td>liquid 对象的合法 method 调用</td><td>non-static method 必须用 object 调</td><td><a class="chip" href="#q-2-13-5">Go</a></td></tr>
+          <tr><td class="mono">2-4-6</td><td>square(5) + " and " + divide(4,2) 输出</td><td>int + String 变成字符串拼接</td><td><a class="chip" href="#q-2-4-6">Go</a></td></tr>
+          <tr><td class="mono">2-5-4</td><td>square(2) + divide(6,2) 输出</td><td>int + int 仍是加法运算</td><td><a class="chip" href="#q-2-5-4">Go</a></td></tr>
+          <tr><td class="mono">2-5-5</td><td>正确接住 calculatePizzaBoxes 返回值</td><td>return value 的类型匹配 + 参数顺序</td><td><a class="chip" href="#q-2-5-5">Go</a></td></tr>
+        </tbody>
+      </table>
+
+      <p style="text-align:center;margin-top:2rem">
+        <a class="btn" style="display:inline-block;padding:.6rem 1.4rem;border-radius:8px;background:var(--btn-bg);color:#fff;text-decoration:none" href="./unit1.html">← 回 Unit 1 · Primitive Types</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span>内容整理自 Akash S. Pathak 的 AP CSA 课堂笔记（Slide 1–61）· 仅供学习复习</span>
+    <button class="btn-ghost" type="button" data-theme-toggle>🌙 Dark</button>
+  </footer>
+</div>
+</body>
+</html>

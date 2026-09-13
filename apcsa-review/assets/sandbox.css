@@ -1,0 +1,361 @@
+/* ============================================================
+   沙盘内部件样式（unit1 / unit2 共用）
+   ============================================================ */
+
+u1-puzzle, u1-type-game, u1-decl-game, u1-expr, u1-stepper,
+u1-cast-duel, u1-round, u1-char { display:block; }
+
+/* ---------- 通用分栏 ---------- */
+.split { display:grid; grid-template-columns:1.12fr .88fr; gap:.9rem; align-items:start; }
+@media (max-width:60ch){ .split { grid-template-columns:1fr; } }
+
+.note-chip {
+  font-size:.82rem; color:var(--text-2); border:1px dashed var(--border);
+  border-radius:8px; padding:.32rem .7rem; margin-top:.55rem; min-height:1.65em;
+  transition:border-color var(--dur-state), color var(--dur-state);
+}
+.note-chip.hot {
+  color:var(--viz-red); font-weight:600;
+  border-color:color-mix(in srgb,var(--viz-red) 55%,transparent);
+  animation:bump 400ms var(--ease-bounce);
+}
+
+@keyframes shake { 25%{transform:translateX(-4px)} 50%{transform:translateX(4px)} 75%{transform:translateX(-2px)} }
+@keyframes slotOk { 40%{transform:scale(1.045)} }
+@keyframes tokPop { 40%{transform:scale(1.14)} }
+@keyframes wig { 25%{transform:rotate(-12deg)} 50%{transform:rotate(10deg)} 75%{transform:rotate(-5deg)} }
+
+/* ---------- §1.1 代码拼图 ---------- */
+.bag { display:flex; flex-wrap:wrap; gap:.45rem; margin-bottom:.7rem; }
+.blk {
+  font-family:var(--font-code); font-size:.78rem; white-space:pre;
+  border:1px solid var(--border-strong); background:var(--bg); color:var(--text);
+  border-radius:8px; padding:.35rem .6rem; cursor:pointer;
+  transition:transform var(--dur-press) var(--ease-out), opacity var(--dur-state);
+}
+.blk:hover { transform:translateY(-2px); }
+.blk.placed { opacity:0; pointer-events:none; }
+.slots { display:grid; gap:.42rem; margin:.2rem 0 .7rem; }
+.slot {
+  font-family:var(--font-code); font-size:.78rem; white-space:pre; min-height:2.05rem;
+  border:1.5px dashed var(--border-strong); border-radius:8px; color:var(--text-2);
+  display:flex; align-items:center; padding:.22rem .6rem; cursor:pointer; background:transparent;
+  transition:border-color var(--dur-state), background var(--dur-state);
+}
+.slot.filled { border-style:solid; color:var(--text); background:var(--bg); }
+.slot .idx { margin-right:auto; padding-left:.6rem; font-size:.7rem; color:var(--text-2); user-select:none; }
+.slot.ok  { border-color:var(--viz-green); animation:slotOk 450ms var(--ease-bounce); }
+.slot.bad { border-color:var(--viz-red); animation:shake 320ms var(--ease-inout); }
+.pz-row { display:flex; gap:.7rem; flex-wrap:wrap; align-items:center; }
+.pz-status { font-size:.85rem; font-weight:600; min-height:1.3em; }
+.pz-status.ok { color:var(--viz-green); }
+.pz-status.bad { color:var(--viz-red); }
+
+/* ---------- §1.2 类型游戏 ---------- */
+.tg-card {
+  border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg);
+  padding:1.1rem 1rem; text-align:center; min-height:4.6rem;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.3rem;
+}
+.tg-card .sc { font-weight:650; font-size:1.06rem; }
+.tg-card .sub { font-size:.78rem; color:var(--text-2); }
+.tg-types { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; margin:.7rem 0 .4rem; }
+@media (max-width:60ch){ .tg-types { grid-template-columns:repeat(2,1fr); } }
+.tg-type {
+  font:inherit; font-family:var(--font-code); font-weight:600; font-size:.92rem;
+  border-radius:8px; border:1px solid var(--border-strong); background:var(--bg);
+  color:var(--text); padding:.55rem 0; cursor:pointer;
+  transition:transform var(--dur-press) var(--ease-out), border-color var(--dur-state),
+             background var(--dur-state);
+}
+.tg-type[data-t="int"]      { --ac:var(--viz-2); }
+.tg-type[data-t="double"]   { --ac:var(--viz-1); }
+.tg-type[data-t="boolean"]  { --ac:var(--viz-3); }
+.tg-type[data-t="String"]   { --ac:var(--viz-7); }
+.tg-type:hover { border-color:var(--ac); transform:translateY(-2px); }
+.tg-type.ok {
+  border-color:var(--ac); background:color-mix(in srgb,var(--ac) 16%,transparent);
+  animation:slotOk 420ms var(--ease-bounce);
+}
+.tg-type.bad { border-color:var(--viz-red); animation:shake 300ms var(--ease-inout); }
+.tg-hint { min-height:1.4em; font-size:.84rem; color:var(--viz-red); font-weight:600; }
+.tg-drawer {
+  display:flex; gap:.9rem; align-items:center; margin-top:.5rem;
+  border-top:1px dashed var(--border); padding-top:.7rem;
+  opacity:.32; transition:opacity var(--dur-move);
+}
+.tg-drawer.live { opacity:1; }
+.bitbar { position:relative; flex:1; height:20px; background:var(--bg-hl);
+  border:1px solid var(--border); border-radius:6px; overflow:hidden; }
+.bitfill {
+  position:absolute; top:2px; bottom:2px; left:2px; width:2%; border-radius:4px;
+  background:var(--ac,var(--viz-2)); transition:width 500ms var(--ease-out);
+}
+.bitbar span.bits {
+  position:absolute; right:.45rem; top:50%; transform:translateY(-50%);
+  font-size:.68rem; font-family:var(--font-code); color:var(--text-2);
+}
+.tg-decl { font-family:var(--font-code); font-size:.86rem; font-weight:600; white-space:nowrap; }
+.score { display:flex; gap:1.1rem; font-size:.84rem; color:var(--text-2); flex-wrap:wrap; }
+.score b { color:var(--text); }
+
+/* 声明 vs 初始化点选 */
+.dg-lines { display:grid; gap:.42rem; margin:.5rem 0; }
+.dg-line {
+  font-family:var(--font-code); font-size:.82rem; text-align:left;
+  border:1px solid var(--border-strong); border-radius:8px; background:var(--bg);
+  color:var(--text); padding:.42rem .7rem; cursor:pointer;
+  transition:all var(--dur-state) var(--ease-out);
+}
+.dg-line:hover { transform:translateX(3px); }
+.dg-line.ok { border-color:var(--viz-green); background:color-mix(in srgb,var(--viz-green) 10%,transparent); }
+.dg-line.bad { border-color:var(--viz-red); animation:shake 300ms; }
+.dg-line:disabled { cursor:default; opacity:.75; }
+
+/* ---------- §1.3 表达式沙盘 ---------- */
+.xp { display:grid; grid-template-columns:1.05fr .95fr; gap:.9rem; }
+@media (max-width:60ch){ .xp { grid-template-columns:1fr; } }
+.xp-stage {
+  border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg);
+  padding:.9rem; position:relative; overflow:hidden; min-height:150px;
+}
+.xp-expr {
+  font-family:var(--font-code); font-size:1.25rem; font-weight:600;
+  text-align:center; padding:.8rem .2rem .5rem; line-height:2;
+}
+.xp-tok {
+  display:inline-block; padding:.06rem .18rem; border-radius:6px;
+  border:1.5px solid transparent;
+  transition:background var(--dur-move) var(--ease-out), border-color var(--dur-move);
+}
+.xp-tok.on {
+  background:color-mix(in srgb,var(--viz-4) 42%,transparent); border-color:var(--viz-1);
+  animation:tokPop 320ms var(--ease-bounce);
+}
+.xp-tok.folded { background:color-mix(in srgb,var(--viz-3) 16%,transparent); border-color:var(--viz-3); }
+.tag-int, .tag-dbl {
+  font-size:.62rem; border-radius:4px; padding:.04rem .32rem; vertical-align:super; font-weight:700;
+}
+.tag-int { background:color-mix(in srgb,var(--viz-2) 22%,transparent); color:var(--viz-5); }
+.tag-dbl { background:color-mix(in srgb,var(--viz-1) 26%,transparent); color:var(--viz-6); }
+.xp-bar { display:flex; justify-content:space-between; align-items:center; gap:.6rem; flex-wrap:wrap; margin-top:.4rem; }
+.fly {
+  position:absolute; z-index:3; font-family:var(--font-code); font-weight:700;
+  color:var(--viz-red); pointer-events:none;
+  transition:transform 720ms var(--ease-inout), opacity 720ms;
+}
+.xp-steps { display:grid; gap:.4rem; align-content:start; }
+.xstep {
+  font-size:.84rem; border:1px solid var(--border); border-radius:8px;
+  padding:.38rem .7rem; background:var(--bg); opacity:.42;
+  transition:all var(--dur-move) var(--ease-out);
+}
+.xstep .mono { font-family:var(--font-code); font-weight:600; }
+.xstep.now { opacity:1; border-color:var(--viz-1); }
+.xstep.done { opacity:1; border-color:var(--viz-green);
+  background:color-mix(in srgb,var(--viz-green) 8%,transparent); }
+.xpres {
+  border:1px solid var(--border); border-radius:8px; padding:.5rem .8rem;
+  background:var(--bg); font-size:.9rem;
+}
+.xpres b { font-family:var(--font-code); font-size:1.05rem; }
+select.xp-sel, input.xp-in {
+  font:inherit; font-family:var(--font-code); font-size:.9rem;
+  border:1px solid var(--border-strong); border-radius:8px;
+  background:var(--bg); color:var(--text); padding:.34rem .5rem;
+}
+input.xp-in { width:5.2rem; text-align:center; }
+.seg { display:inline-flex; border:1px solid var(--border-strong); border-radius:8px; overflow:hidden; }
+.seg button {
+  border:none; background:var(--bg); color:var(--text); font:inherit;
+  font-size:.8rem; padding:.32rem .7rem; cursor:pointer;
+  transition:background var(--dur-state);
+}
+.seg button.on { background:var(--btn-bg); color:#fff; }
+.chiprow { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
+.fmt-row { font-size:.78rem; color:var(--text-2); margin-top:.35rem; min-height:1em; text-align:center; }
+
+/* ---------- §1.5 casting 对照台 ---------- */
+.lanes { display:grid; gap:.7rem; }
+.lane {
+  border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg);
+  padding:.75rem .9rem; position:relative; overflow:hidden;
+}
+.lane h4 { margin:.05rem 0 .55rem; font-family:var(--font-code); font-size:.88rem; font-weight:700; }
+.stage {
+  display:inline-block; font-family:var(--font-code); font-size:.83rem;
+  border:1px solid var(--border); border-radius:8px; padding:.28rem .55rem;
+  margin:.18rem .2rem .18rem 0; background:var(--surface); opacity:.38;
+  transition:all var(--dur-move) var(--ease-out);
+}
+.stage.now {
+  opacity:1; border-color:var(--viz-1);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--viz-4) 38%,transparent);
+  animation:tokPop 300ms var(--ease-bounce);
+}
+.stage.done { opacity:1; border-color:var(--viz-green); }
+.stage.result { font-weight:700; }
+.arrow { color:var(--text-2); font-size:.75rem; }
+.duel-end {
+  margin:.2rem 0 0; font-weight:650; opacity:0; transform:translateY(6px);
+  transition:all 320ms var(--ease-out);
+}
+.duel-end.show { opacity:1; transform:none; color:var(--viz-green); }
+
+ { font-size:1.02rem; }
+
+/* ============================================================
+   Unit 2 沙盘内部件
+   ============================================================ */
+u2-instantiator, u2-memory, u2-signature, u2-callflow, u2-static { display:block; }
+
+/* ---------- §2.1 饼干模具 instantiator ---------- */
+.mk-grid { display:grid; grid-template-columns:.92fr 1.08fr; gap:.9rem; }
+@media (max-width:60ch){ .mk-grid { grid-template-columns:1fr; } }
+.classcard { border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg); padding:.75rem .9rem; }
+.classcard h4 { margin:.1rem 0 .4rem; font-family:var(--font-code); font-size:.9rem; font-weight:700; }
+.classcard .fieldline { font-family:var(--font-code); font-size:.74rem; color:var(--text-2); margin:.15rem 0; }
+.fld { display:flex; align-items:center; gap:.55rem; margin:.42rem 0; font-size:.85rem; }
+.fld label { width:5.6rem; color:var(--text-2); font-family:var(--font-code); font-size:.78rem; }
+.new-btn {
+  width:100%; margin-top:.55rem; padding:.7rem; border:none; border-radius:10px; cursor:pointer;
+  background:var(--viz-5); color:#fff; font-family:var(--font-code); font-weight:700; font-size:.95rem;
+  transition:transform var(--dur-press) var(--ease-out), background var(--dur-state);
+}
+.new-btn:hover { background:#005a8c; }
+.new-btn:active { transform:scale(.97); }
+.bench {
+  display:flex; flex-wrap:wrap; gap:.6rem; align-content:flex-start; min-height:7rem;
+  max-height:230px; overflow-y:auto;
+  border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg); padding:.65rem;
+}
+.objcard {
+  width:9.2rem; border-radius:.8rem; padding:.5rem .6rem; position:relative;
+  border:1.5px solid var(--border-strong); background:var(--surface);
+  font-family:var(--font-code); font-size:.7rem; line-height:1.55;
+  animation:objIn 480ms var(--ease-bounce) both;
+}
+@keyframes objIn {
+  0% { transform:translateY(-30px) scale(.55); opacity:0; }
+  60% { opacity:1; }
+  100% { transform:none; opacity:1; }
+}
+.objcard header { font-weight:700; font-size:.72rem; margin-bottom:.2rem; }
+.objcard .mrow { display:flex; gap:.3rem; margin-top:.4rem; }
+.objcard .mbtn {
+  flex:1; font-size:.66rem; padding:.24rem .1rem; border-radius:6px; cursor:pointer;
+  border:1px solid var(--border-strong); background:var(--bg); color:var(--text);
+  font-family:var(--font-code); transition:background var(--dur-state);
+}
+.objcard .mbtn:hover { background:var(--bg-hl); }
+.objcard.speaking { outline:3px solid var(--viz-4); }
+.bench .empty { color:var(--text-2); font-size:.82rem; margin:auto; }
+
+/* ---------- §2.2 栈与堆 ---------- */
+.mem-area { position:relative; display:grid; grid-template-columns:225px 1fr; gap:.9rem; position:relative; }
+@media (max-width:60ch){ .mem-area { grid-template-columns:1fr; } }
+.mem-pane { border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg); min-height:190px; padding:.6rem .65rem; }
+.mem-pane h4 { margin:.1rem 0 .5rem; font-variant:small-caps; letter-spacing:.06em; font-size:.78rem; color:var(--text-2); font-weight:700; }
+.stack-frame { border:1px solid var(--border-strong); border-radius:.6rem; padding:.35rem .45rem; font-family:var(--font-code); font-size:.73rem; background:var(--surface); }
+.stack-var {
+  display:flex; align-items:center; gap:.35rem; margin-top:.35rem;
+  border:1px dashed var(--border-strong); border-radius:.5rem; padding:.26rem .45rem;
+  font-family:var(--font-code); font-size:.76rem; background:var(--bg);
+}
+.stack-var b { font-weight:700; }
+.stack-var.isnull .val { color:var(--viz-red); font-weight:700; }
+.heap-obj {
+  width:11.5rem; border:1.5px solid var(--border-strong); border-radius:.7rem;
+  padding:.42rem .55rem; margin-bottom:.45rem; display:inline-block; vertical-align:top;
+  margin-right:.45rem;
+  font-family:var(--font-code); font-size:.72rem; line-height:1.6; background:var(--surface);
+  animation:objIn 480ms var(--ease-bounce) both;
+}
+.mem-pane.quiet .heap-obj { animation:none; }
+.heap-obj header { font-weight:700; }
+.heap-obj .oid { color:var(--text-2); font-size:.66rem; }
+svg.wires { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:2; }
+.wires path { fill:none; stroke:var(--viz-3); stroke-width:2.5; }
+.wires path.dying { stroke:var(--viz-6); stroke-dasharray:7 5; opacity:0; transition:opacity 600ms var(--ease-out); }
+.wires polygon { fill:var(--viz-3); }
+.npe-banner {
+  display:none; margin-top:.5rem; border:1px dashed color-mix(in srgb,var(--viz-6) 60%,transparent);
+  border-radius:.6rem; padding:.45rem .7rem; font-size:.8rem; font-weight:650; color:var(--viz-red);
+  background:color-mix(in srgb,var(--viz-6) 8%,transparent);
+}
+.npe-banner.show { display:block; animation:shake 360ms var(--ease-inout); }
+
+/* ---------- §2.2/2.4 签名墙 + 调用判定 ---------- */
+.sig-wall { border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg); padding:.55rem .8rem; margin-bottom:.6rem; }
+.sig-wall h5 { margin:.05rem 0 .4rem; font-size:.76rem; font-variant:small-caps; letter-spacing:.05em; color:var(--text-2); }
+.sigline { font-family:var(--font-code); font-size:.86rem; font-weight:600; padding:.14rem 0; transition:background var(--dur-state); border-radius:6px; padding-inline:.35rem; }
+.sigline.hit { background:color-mix(in srgb,var(--viz-3) 14%,transparent); }
+.calls { display:grid; gap:.45rem; }
+.callchip {
+  display:flex; align-items:center; gap:.6rem; text-align:left; width:100%;
+  font-family:var(--font-code); font-size:.82rem; border:1px solid var(--border-strong);
+  background:var(--bg); color:var(--text); border-radius:8px; padding:.45rem .7rem; cursor:pointer;
+  transition:all var(--dur-state) var(--ease-out);
+}
+.callchip:hover { transform:translateX(3px); }
+.callchip .verdict { margin-left:auto; font-weight:700; font-size:.78rem; white-space:nowrap; }
+.callchip.ok { border-color:var(--viz-green); background:color-mix(in srgb,var(--viz-green) 10%,transparent); }
+.callchip.ok .verdict { color:var(--viz-green); }
+.callchip.no { border-color:var(--viz-red); background:color-mix(in srgb,var(--viz-red) 8%,transparent); }
+.callchip.no .verdict { color:var(--viz-red); }
+.jerr { display:none; font-family:var(--font-code); font-size:.74rem; color:var(--viz-red); margin:-.1rem 0 .35rem .5rem; }
+.jerr.show { display:block; animation:fadeSlide var(--dur-move) var(--ease-out); }
+
+/* ---------- §2.3 执行流步进器 ---------- */
+.cstack { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; min-height:2.35rem; margin-bottom:.55rem; }
+.framechip {
+  font-family:var(--font-code); font-size:.72rem; border:1.5px solid var(--viz-5); color:var(--viz-5);
+  border-radius:8px; padding:.22rem .55rem; background:color-mix(in srgb,var(--viz-2) 9%,transparent);
+  animation:chipIn 320ms var(--ease-bounce);
+}
+.cstack.quiet .framechip { animation:none; }
+@keyframes chipIn { 0%{transform:scale(.6); opacity:0} 100%{transform:none; opacity:1} }
+.frame-note { font-size:.78rem; color:var(--text-2); }
+.paper { border:1.5px dashed var(--border-strong); border-radius:.8rem; background:var(--bg); padding:.3rem .3rem; }
+.paper h6 { margin:.25rem .5rem; font-size:.72rem; font-variant:small-caps; letter-spacing:.05em; color:var(--text-2); }
+
+/* ---------- §2.5 static 对照实验 ---------- */
+.clszone {
+  border:1.5px dashed var(--viz-5); border-radius:1rem; padding:.55rem .8rem .7rem; margin-bottom:.7rem;
+  background:color-mix(in srgb,var(--viz-2) 7%,transparent);
+}
+.clszone h5 { margin:.1rem 0 .45rem; font-variant:small-caps; letter-spacing:.06em; font-size:.76rem; color:var(--viz-5); }
+.objrow { display:grid; grid-template-columns:repeat(4,1fr); gap:.6rem; }
+@media (max-width:60ch){ .objrow { grid-template-columns:repeat(2,1fr); } }
+.objunit { border:1.5px solid var(--border-strong); border-radius:.9rem; background:var(--bg); padding:.45rem .5rem .6rem; text-align:center; }
+.objunit header { font-family:var(--font-code); font-weight:700; font-size:.8rem; margin-bottom:.25rem; display:block; }
+.objunit.flash { animation:objGlow 560ms var(--ease-bounce); }
+@keyframes objGlow { 0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--viz-4) 80%,transparent)} 40%{box-shadow:0 0 0 6px color-mix(in srgb,var(--viz-4) 45%,transparent)} 100%{box-shadow:0 0 0 0 transparent} }
+.call-big {
+  display:block; width:100%; margin:.7rem 0 .3rem; padding:.75rem; border:none; border-radius:10px;
+  cursor:pointer; font-family:var(--font-code); font-weight:700; font-size:.95rem;
+  background:var(--viz-6); color:#fff;
+  transition:transform var(--dur-press) var(--ease-out), background var(--dur-state);
+}
+.call-big:hover { background:#a84a00; }
+.call-big:active { transform:scale(.97); }
+.insight {
+  margin-top:.55rem; font-size:.88rem; font-weight:650; color:var(--text); opacity:0; transform:translateY(6px);
+  transition:all 320ms var(--ease-out);
+}
+.insight.show { opacity:1; transform:none; }
+
+/* ---------- §2.5 static 对照实验（双通道版） ---------- */
+.sl-lanes { display:grid; grid-template-columns:1.18fr 1fr; gap:.8rem; }
+@media (max-width:60ch){ .sl-lanes { grid-template-columns:1fr; } }
+.sl-lane { border:1.5px dashed var(--border-strong); border-radius:1rem; background:var(--bg); padding:.65rem .8rem; }
+.sl-lane h5 { margin:.05rem 0 .55rem; font-variant:small-caps; letter-spacing:.05em; font-size:.78rem; color:var(--text-2); }
+.objunit .count-btn {
+  width:100%; margin-top:.4rem; padding:.3rem 0; font-family:var(--font-code); font-size:.74rem;
+  border:1px solid var(--border-strong); border-radius:7px; background:var(--bg); color:var(--text); cursor:pointer;
+  transition:background var(--dur-state), transform var(--dur-press);
+}
+.objunit .count-btn:hover { background:var(--bg-hl); transform:translateY(-1px); }
+.seq { font-family:var(--font-code); font-size:.82rem; margin-top:.6rem; min-height:1.4em; color:var(--viz-green); font-weight:700; }
+.seq .lbl { color:var(--text-2); font-weight:400; }
+.sl-msg { margin-top:.4rem; font-size:.85rem; min-height:1.3em; }
