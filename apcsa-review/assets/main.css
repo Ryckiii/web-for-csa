@@ -267,6 +267,7 @@ quiz-card {
 quiz-card viz-code { margin:.6rem 0; }
 .options { list-style:none; padding:0; margin:.8rem 0 .4rem; display:grid; gap:.5rem; }
 .options li {
+  min-width:0; overflow-wrap:anywhere;
   font-family:var(--font-code); font-size:.86rem; cursor:pointer;
   border:1px solid var(--border); border-radius:8px; padding:.5rem .8rem;
   background:var(--bg);
@@ -301,7 +302,7 @@ quiz-card.done { border-color:var(--border-strong); }
   border:1px dashed var(--border); border-radius:1rem;
   background:var(--surface); padding:.55rem 1rem; margin:1.4rem 0; font-size:.88rem;
 }
-.qp-dots { display:inline-flex; gap:.3rem; align-items:center; }
+.qp-dots { display:inline-flex; flex-wrap:wrap; gap:.3rem; align-items:center; max-width:100%; }
 .qp-dot { width:.75rem; height:.75rem; border-radius:50%; background:var(--border-strong); }
 .qp-dot.ok  { background:var(--viz-green); }
 .qp-dot.bad { background:var(--viz-orange); }
@@ -435,3 +436,61 @@ quiz-card:target {
   0%,35% { box-shadow:0 0 0 7px color-mix(in srgb,var(--viz-2) 30%,transparent); }
   100%   { box-shadow:0 0 0 0 transparent; }
 }
+
+/* ---------- Unit 3 首页卡片：条件流 SVG ---------- */
+.u3-logic-hero { width:88%; height:auto; overflow:visible; }
+.u3-logic-hero .u3-wire { fill:none; stroke:var(--border-strong); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.u3-logic-hero .u3-input-node { fill:color-mix(in srgb,var(--viz-blue) 15%,var(--surface)); stroke:var(--viz-blue); stroke-width:1.5; }
+.u3-logic-hero .u3-input-node.second { fill:color-mix(in srgb,var(--viz-orange) 15%,var(--surface)); stroke:var(--viz-orange); }
+.u3-logic-hero .u3-and-gate { fill:color-mix(in srgb,var(--viz-green) 13%,var(--surface)); stroke:var(--viz-green); stroke-width:1.7; }
+.u3-logic-hero .u3-output-node { fill:color-mix(in srgb,var(--viz-blue) 13%,var(--surface)); stroke:var(--viz-blue); stroke-width:1.5; }
+.u3-logic-hero .u3-output-node.no { fill:color-mix(in srgb,var(--viz-orange) 14%,var(--surface)); stroke:var(--viz-orange); }
+.u3-logic-hero .u3-node-text, .u3-logic-hero .u3-gate-text { fill:var(--text); font-family:var(--font-code); font-weight:700; }
+.u3-logic-hero .u3-node-text { font-size:11px; }
+.u3-logic-hero .u3-gate-text { font-size:17px; }
+.u3-logic-hero .u3-junction { fill:var(--viz-orange); }
+.u3-logic-hero .u3-flow-packet { transform-box:fill-box; transform-origin:center; opacity:0; }
+.u3-logic-hero .packet-a { fill:var(--viz-orange); animation:u3PacketA 3.8s ease-in-out infinite; }
+.u3-logic-hero .packet-b { fill:var(--viz-blue); animation:u3PacketB 3.8s ease-in-out infinite; }
+.u3-logic-hero .packet-yes { fill:var(--viz-green); animation:u3PacketYes 3.8s ease-in-out infinite; }
+.u3-logic-hero .packet-no { fill:var(--viz-orange); animation:u3PacketNo 3.8s ease-in-out infinite; }
+.u3-logic-hero .u3-gate-pulse { stroke:var(--viz-green); animation:u3GatePulse 1.8s var(--ease-out) infinite; transform-box:fill-box; transform-origin:center; }
+@keyframes u3PacketA { 0%,5%{opacity:0;transform:translate(0,0)} 12%{opacity:1} 38%{opacity:1;transform:translate(35px,14px)} 46%,100%{opacity:0;transform:translate(41px,16px)} }
+@keyframes u3PacketB { 0%,30%{opacity:0;transform:translate(0,0)} 38%{opacity:1} 66%{opacity:1;transform:translate(35px,-14px)} 74%,100%{opacity:0;transform:translate(41px,-16px)} }
+@keyframes u3PacketYes { 0%,55%{opacity:0;transform:translate(0,0)} 61%{opacity:1} 87%{opacity:1;transform:translate(61px,-23px)} 94%,100%{opacity:0;transform:translate(69px,-25px)} }
+@keyframes u3PacketNo { 0%,68%{opacity:0;transform:translate(0,0)} 74%{opacity:1} 94%{opacity:1;transform:translate(61px,23px)} 99%,100%{opacity:0;transform:translate(69px,25px)} }
+@keyframes u3GatePulse { 0%,100%{opacity:.2;transform:scale(.93)} 50%{opacity:.55;transform:scale(1.08)} }
+.sr-only { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+/* Unit carousel: two cards at once on desktop, with reliable wheel, drag and button navigation. */
+.carousel-controls {
+  display:flex; align-items:center; justify-content:flex-end; gap:.45rem;
+  width:100%; margin:1.2rem 0 -.95rem;
+}
+.carousel-control {
+  min-height:36px; padding:.35rem .7rem; border:1px solid var(--border-strong);
+  border-radius:999px; background:var(--surface); color:var(--text);
+  font:600 .75rem var(--font-body); cursor:pointer;
+  transition:background var(--dur-state),border-color var(--dur-state),transform var(--dur-press);
+}
+.carousel-control:hover:not(:disabled) { border-color:var(--viz-orange); background:color-mix(in srgb,var(--viz-orange) 8%,var(--surface)); transform:translateY(-1px); }
+.carousel-control:focus-visible { outline:2px solid var(--viz-orange); outline-offset:2px; }
+.carousel-control:disabled { opacity:.45; cursor:not-allowed; }
+.carousel-position { min-width:3.7rem; color:var(--text-2); text-align:center; font:600 .7rem var(--font-code); }
+.cards.unit-carousel {
+  display:flex; flex-wrap:nowrap; gap:1.1rem; overflow-x:auto; overflow-y:hidden;
+  padding:.35rem .15rem .9rem; scroll-snap-type:x proximity; scroll-behavior:auto;
+  overscroll-behavior-x:contain; scrollbar-width:thin;
+  scrollbar-color:var(--viz-orange) var(--bg-hl); cursor:grab;
+}
+.cards.unit-carousel.is-dragging { cursor:grabbing; scroll-snap-type:none; user-select:none; }
+.cards.unit-carousel.is-wheel-scrolling { scroll-snap-type:none; }
+.cards.unit-carousel > .card { flex:0 0 calc((100% - 1.1rem) / 2); min-width:0; scroll-snap-align:start; }
+.cards.unit-carousel:focus-visible { outline:2px solid var(--viz-orange); outline-offset:4px; border-radius:1rem; }
+.carousel-hint { margin:.1rem 0 1.2rem; text-align:center; color:var(--text-2); font-size:.76rem; }
+@media (max-width:600px) {
+  .carousel-controls { justify-content:center; margin-top:.9rem; }
+  .cards.unit-carousel > .card { flex-basis:min(84%, 24rem); }
+  .carousel-hint { max-width:48ch; margin:.1rem auto 1.2rem; }
+}
+@media (prefers-reduced-motion:reduce) { .carousel-control { transition:none; } }

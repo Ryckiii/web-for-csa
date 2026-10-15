@@ -1,118 +1,165 @@
-/* §2.5 招牌沙盘：<u2-static> instance method vs static method 对照实验
-   左通道：4 个 object 各自带 count() 按钮；右通道：class 级共享 num + count_static() */
+/* §2.5 guided counter demo: start with the visible behavior, reveal Java terminology afterwards. */
 import '../../../assets/js/components.js';
+
+const CAL_CODE = `class Cal {
+    int x = 0; // each Cal object has its own x
+    void count() {
+        x = x + 1;
+        System.out.println(x);
+    }
+    static int num = 0; // one num shared by the class
+    static void count_static() {
+        num = num + 1;
+        System.out.println(num);
+    }
+}`;
 
 class U2Static extends HTMLElement {
   connectedCallback() {
-    if (this._done) return; this._done = true;
+    if (this._done) return;
+    this._done = true;
     this.xs = [0, 0, 0, 0];
     this.num = 0;
-    this.printedL = [];
-    this.printedR = [];
+    this.mode = 'instance';
 
-    const lanes = document.createElement('div'); lanes.className = 'sl-lanes';
+    this.innerHTML = `
+      <div class="sl-guide">
+        <p class="sl-intro">把 <code>Cal</code> 想成一种计数器。先试“每个计数器自己记”，再试“全班共用一块计数板”；先看数字怎么变，最后再看 Java 名词。</p>
+        <div class="sl-mode-tabs" role="group" aria-label="选择计数方式">
+          <button class="sl-mode-tab on" type="button" aria-pressed="true" data-mode="instance">① 每个对象自己记</button>
+          <button class="sl-mode-tab" type="button" aria-pressed="false" data-mode="static">② 全班共用一份</button>
+        </div>
 
-    /* —— 左通道：Instance method —— */
-    const laneL = document.createElement('div'); laneL.className = 'sl-lane';
-    const hL = document.createElement('h5');
-    hL.textContent = 'Instance method · 每个 object 各带一个 count()';
-    const row = document.createElement('div'); row.className = 'objrow';
-    this.inst = this.xs.map((_, i) => {
-      const d = document.createElement('div'); d.className = 'objunit';
-      const h = document.createElement('header'); h.textContent = 'c' + (i + 1);
-      const m = document.createElement('mem-box');
-      m.setAttribute('name', 'x'); m.setAttribute('value', '0');
-      const b = document.createElement('button');
-      b.className = 'count-btn'; b.textContent = 'count()';
-      b.addEventListener('click', () => this.callInst(i));
-      d.append(h, m, b); row.appendChild(d);
-      return { unit: d, box: m };
+        <section class="sl-mode-panel" data-panel="instance" aria-label="每个对象各自计数">
+          <p class="sl-prompt" data-instance-note aria-live="polite">先点 c1 一次，再点 c2 一次。观察：是不是只有被点的那张卡数字变化？</p>
+          <div class="sl-object-grid" data-instances></div>
+          <p class="sl-console-caption">Console：方法里的 <code>System.out.println(x)</code> 实际打印的数字</p>
+          <viz-console title="Console · 每个对象的输出" data-instance-console></viz-console>
+        </section>
+
+        <section class="sl-mode-panel" data-panel="static" aria-label="所有对象共用一份计数" hidden>
+          <p class="sl-prompt" data-static-note aria-live="polite">下面只有一块共享计数板。点一次“共享计数 +1”，再点一次，观察同一个数字继续增加。</p>
+          <div class="sl-class-frame">
+            <div class="sl-class-heading"><b>Cal 这个 class</b><span>可以创建很多对象</span></div>
+            <div class="sl-member-row" aria-label="Cal class 的四个示例对象">
+              <span>c1</span><span>c2</span><span>c3</span><span>c4</span>
+            </div>
+            <p class="sl-shared-caption">这些对象共用 class 上的这一份数字：</p>
+            <div class="sl-shared-board">
+              <mem-box name="共享数字 num" value="0" class="shared" data-num></mem-box>
+              <button class="sl-shared-button" type="button" data-static-call>共享计数 +1</button>
+              <code class="sl-call-code">Cal.count_static()</code>
+            </div>
+          </div>
+          <p class="sl-console-caption">Console：方法里的 <code>System.out.println(num)</code> 实际打印的数字</p>
+          <viz-console title="Console · 全班共享的输出" data-static-console></viz-console>
+        </section>
+
+        <div class="sl-reset-row">
+          <button class="btn-ghost" type="button" data-reset>⟲ 全部重置</button>
+          <span>切换上方两幕时，数字会保留，方便来回比较。</span>
+        </div>
+
+        <details class="sl-after-details">
+          <summary>看懂数字变化后：对应的 Java 术语</summary>
+          <div class="sl-term-grid">
+            <div><b>每张对象卡自己的数字 x</b><span>instance variable（实例变量）</span></div>
+            <div><b>c1.count() 这样的对象按钮</b><span>instance method（实例方法）</span></div>
+            <div><b>全班共享的唯一数字 num</b><span>static variable（静态变量）</span></div>
+            <div><b>Cal.count_static() 共享按钮</b><span>static method（静态方法）</span></div>
+          </div>
+        </details>
+
+        <details class="sl-code-details">
+          <summary>最后再看对应的 Java 代码</summary>
+          <viz-code data-java-code>${CAL_CODE}</viz-code>
+        </details>
+      </div>`;
+
+    this.instanceNote = this.querySelector('[data-instance-note]');
+    this.staticNote = this.querySelector('[data-static-note]');
+    this.instanceConsole = this.querySelector('[data-instance-console]');
+    this.staticConsole = this.querySelector('[data-static-console]');
+    this.numBox = this.querySelector('[data-num]');
+    this.code = this.querySelector('[data-java-code]');
+    this.instanceCards = [];
+
+    const host = this.querySelector('[data-instances]');
+    this.xs.forEach((_, i) => {
+      const card = document.createElement('div');
+      card.className = 'sl-object-card';
+      const heading = document.createElement('div'); heading.className = 'sl-object-heading';
+      const name = document.createElement('b'); name.textContent = `c${i + 1}`;
+      const kind = document.createElement('span'); kind.textContent = '一个 Cal 对象';
+      heading.append(name, kind);
+      const box = document.createElement('mem-box');
+      box.setAttribute('name', '它自己的数字 x'); box.setAttribute('value', '0');
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'sl-personal-button';
+      button.textContent = '记录一次';
+      button.setAttribute('aria-label', `让 c${i + 1} 的个人数字加一`);
+      button.addEventListener('click', () => this.callInstance(i));
+      const code = document.createElement('code'); code.className = 'sl-call-code'; code.textContent = `c${i + 1}.count()`;
+      card.append(heading, box, button, code);
+      host.appendChild(card);
+      this.instanceCards.push({ card, box });
     });
-    this.seqL = document.createElement('div'); this.seqL.className = 'seq';
-    this.msgL = document.createElement('div'); this.msgL.className = 'sl-msg';
-    laneL.append(hL, row, this.seqL, this.msgL);
 
-    /* —— 右通道：Static method —— */
-    const laneR = document.createElement('div'); laneR.className = 'sl-lane';
-    const hR = document.createElement('h5');
-    hR.textContent = 'Static method · 调用的是 class 级那一份';
-    const zone = document.createElement('div'); zone.className = 'clszone';
-    zone.innerHTML = '<h5>class Cal（class level · 只有一份）</h5>';
-    this.numBox = document.createElement('mem-box');
-    this.numBox.setAttribute('name', 'num（static）');
-    this.numBox.setAttribute('class', 'shared');
-    this.numBox.setAttribute('value', '0');
-    zone.appendChild(this.numBox);
-    this.statBtn = document.createElement('button');
-    this.statBtn.className = 'call-big'; this.statBtn.textContent = 'Cal.count_static()';
-    this.statBtn.addEventListener('click', () => this.callStatic());
-    this.seqR = document.createElement('div'); this.seqR.className = 'seq';
-    this.msgR = document.createElement('div'); this.msgR.className = 'sl-msg';
-    laneR.append(hR, zone, this.statBtn, this.seqR, this.msgR);
-
-    lanes.append(laneL, laneR);
-
-    this.term = document.createElement('viz-console'); this.term.setAttribute('title', 'Console');
-    this.renderSeq(this.seqL, this.printedL);
-    this.renderSeq(this.seqR, this.printedR);
-
-    const bottom = document.createElement('div'); bottom.className = 'pz-row';
-    const reset = document.createElement('button');
-    reset.className = 'btn-ghost'; reset.textContent = '⟲ Reset';
-    reset.addEventListener('click', () => this.reset());
-    bottom.appendChild(reset);
-
-    this.append(lanes, this.term, bottom);
+    this.querySelectorAll('[data-mode]').forEach(button => {
+      button.addEventListener('click', () => this.setMode(button.dataset.mode));
+    });
+    this.querySelector('[data-static-call]').addEventListener('click', () => this.callStatic());
+    this.querySelector('[data-reset]').addEventListener('click', () => this.reset());
+    this.setMode('instance');
   }
 
-  callInst(i) {
-    this.xs[i]++;
-    this.inst[i].box.set(String(this.xs[i]));
-    const u = this.inst[i].unit;
-    u.classList.remove('flash'); void u.offsetWidth; u.classList.add('flash');
-    const v = this.xs[i];
-    this.printedL.push(v);
-    this.term.print(`c${i + 1}.count() → ${v}`, 'res');
-    this.renderSeq(this.seqL, this.printedL);
-    if (this.xs.every(v => v === 1)) {
-      this.msgL.innerHTML = '💡 四个 object 各调一次，输出 <b>1 1 1 1</b>：instance variable 是每个 object<b>各自一份</b>，都从自己的 0 开始。';
-      this.msgL.style.color = 'var(--viz-green)';
-    } else if (this.xs.every(v => v >= 1)) {
-      this.msgL.innerHTML = '再调同一个 object，它自己的 x 才往上涨——x 永远跟着「那个 object」走。';
-      this.msgL.style.color = 'var(--text-2)';
+  setMode(mode) {
+    this.mode = mode;
+    this.querySelectorAll('[data-mode]').forEach(button => {
+      const selected = button.dataset.mode === mode;
+      button.classList.toggle('on', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    this.querySelectorAll('[data-panel]').forEach(panel => {
+      panel.hidden = panel.dataset.panel !== mode;
+    });
+    if (this.code && typeof this.code.highlightLine === 'function') {
+      this.code.highlightLine(mode === 'instance' ? 3 : 8);
     }
+  }
+
+  callInstance(i) {
+    this.xs[i]++;
+    this.instanceCards[i].box.set(String(this.xs[i]));
+    const card = this.instanceCards[i].card;
+    card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+    this.instanceConsole.print(String(this.xs[i]), 'res');
+
+    if (this.xs.every(value => value === 1)) {
+      this.instanceNote.textContent = '四张卡各记了一次：每张都是 1。Console 里会出现四个 1，但它们来自四个各自独立的数字。';
+    } else {
+      this.instanceNote.textContent = `你点了 c${i + 1}：只有 c${i + 1} 的数字变成 ${this.xs[i]}；其他三张卡保持原值。Console 打印 ${this.xs[i]}。`;
+    }
+    this.setMode('instance');
   }
 
   callStatic() {
     this.num++;
     this.numBox.set(String(this.num));
-    this.printedR.push(this.num);
-    this.term.print(`Cal.count_static() → ${this.num}`, 'res');
-    this.renderSeq(this.seqR, this.printedR);
-    if (this.num === 4) {
-      this.msgR.innerHTML = '💡 连调 4 次，输出 <b>1 2 3 4</b>：num 是 <b>static（class level）</b>，全体 object 共享<b>同一个盒子</b>。';
-      this.msgR.style.color = 'var(--viz-green)';
-    } else if (this.num > 4) {
-      this.msgR.innerHTML = 'num 还在涨——它不属于任何一个 object，全 class 一辈子只有这一份。';
-      this.msgR.style.color = 'var(--text-2)';
-    }
-  }
-
-  renderSeq(el, arr) {
-    el.innerHTML = arr.length
-      ? `<span class="lbl">output so far:&nbsp;</span>${arr.join(' ')}`
-      : '<span class="lbl">output so far:（还没有）</span>';
+    this.staticConsole.print(String(this.num), 'res');
+    this.staticNote.textContent = `共享数字从 ${this.num - 1} 变成 ${this.num}。再按一次，同一个数字会继续增加；它不属于某一张 c 卡。Console 打印 ${this.num}。`;
+    this.setMode('static');
   }
 
   reset() {
     this.xs = [0, 0, 0, 0]; this.num = 0;
-    this.printedL = []; this.printedR = [];
-    this.inst.forEach(x => x.box.set('0'));
+    this.instanceCards.forEach(item => { item.box.set('0'); item.card.classList.remove('flash'); });
     this.numBox.set('0');
-    this.term.clear();
-    this.msgL.textContent = ''; this.msgR.textContent = '';
-    this.renderSeq(this.seqL, this.printedL);
-    this.renderSeq(this.seqR, this.printedR);
+    this.instanceConsole.clear(); this.staticConsole.clear();
+    this.instanceNote.textContent = '先点 c1 一次，再点 c2 一次。观察：是不是只有被点的那张卡数字变化？';
+    this.staticNote.textContent = '下面只有一块共享计数板。点一次“共享计数 +1”，再点一次，观察同一个数字继续增加。';
+    this.setMode('instance');
   }
 }
-customElements.define('u2-static', U2Static);
+
+if (!customElements.get('u2-static')) customElements.define('u2-static', U2Static);

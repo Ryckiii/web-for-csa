@@ -1,10 +1,10 @@
-# 📐 AP CSA 复习沙盘站 · 设计方案（待确认）
+# 📐 AP CSA 复习沙盘站 · 设计与实现记录
 
-> 目标：模仿 samwho.dev 的 explorable explanation 风格，把 Unit 1 / Unit 2 两份笔记做成
-> 「可以进去玩」的复习网站。定稿确认后开始动工。
+> 目标：模仿 samwho.dev 的 explorable explanation 风格，把 Unit 1 / Unit 2 课堂笔记做成
+> 「可以进去玩」的复习网站。页面当前以 `unit1.html` / `unit2.html` 的实现为准；本文件记录布局、视觉规范与内容映射。
 >
 > 已确认决策：✅ 首页 + 两个独立单元页 · ✅ 中文讲解 + 英文术语/代码 ·
-> ✅ 每节挑精华题做交互，其余折叠速查 · ✅ 每单元 4–5 个沙盘全做
+> ✅ 每节挑精华题做交互、其余以速查收束 · ✅ 单元页沿用原生 Web Components 与共享视觉 tokens
 
 ---
 
@@ -14,7 +14,7 @@
 apcsa-review/
 ├── index.html          首页：两张单元卡片 + 小动画 hero + 学习路径
 ├── unit1.html          Unit 1 · Primitive Types（5 节 + 5 沙盘 + 8 精华题 + 速查）
-├── unit2.html          Unit 2 · Using Objects（5 节 + 5 沙盘 + 10 精华题 + 速查）
+├── unit2.html          Unit 2 · Using Objects（2.1–2.9 + 多个互动沙盘 + 18 精华题 + 速查）
 ├── assets/main.css     设计 token 层 + 排版 + 组件样式（全部页面的皮肤）
 └── assets/js/*.js      原生 Web Components，按页按需加载，无外部依赖
 ```
@@ -118,7 +118,7 @@ Playground（文末开放全参数的沙盘）
 
 ## 5. Unit 2 · Using Objects —— 内容分布与交互设计
 
-**post-meta**：AP 占比 5–7.5% · 13–15 课时 · Skills 1.C / 2.C / 3.A / 5.A · 本课覆盖 2.1–2.5
+**post-meta**：AP 占比 5–7.5% · Skills 1.C / 2.C / 3.A / 5.A · 本页覆盖 2.1–2.9
 **开篇钩子**：传送带动画——模具每 stamping 一次，饼干对象多一块：`new Human()`。
 
 ### §2.1 类是蓝图，对象是实例
@@ -162,14 +162,38 @@ Playground（文末开放全参数的沙盘）
 - 切到 `count_static()`：上方出现「Class 级共享」的 num 盒子（从 4 个对象里"抽离"飘到顶部），连点 4 次 → `1 2 3 4`
 - 静态图 + 一句话点题：instance variable 每对象一份，static variable 全类一份
 
-### 🎮 Unit 2 Playground（文末）
-栈堆自由模式：按钮序列 `new` / 赋值 / `= null` / 调方法，自由编排看内存演变。
+### §2.6 String Objects · Literals · Concatenation
+讲解：String 是 reference type；字面量与 constructor；immutable；`+` / `+=` / `concat`；字符串拼接顺序与 escape sequences。
+🎛 **沙盘 F `<u2-string-life>` String 生命周期**
+- 逐行追踪 `s1 = "xy"; s2 = s1; s1 = s1 + s2 + "z";`，分别显示 reference 与 immutable heap object
+- 切换 `concat` 返回值是被丢弃还是赋回；点选 `\"` / `\\` / `\n` 看源码与 console 输出
 
-### 📝 精华 Quiz（交互 10 题）
+### §2.7 String Methods · 索引与返回值
+讲解：`length`、`charAt`、两种 `substring`、`indexOf`、`equals`、`compareTo`、`toString`；`java.lang` 默认可用。
+🎛 **沙盘 G `<u2-string-methods>` String 显微镜**
+- 可编辑 String、逐字显示 0-based index；切换方法并调整参数，实时看到返回值或越界异常
+- `equals` 以内容判断；`compareTo` 聚焦负 / 零 / 正；`substring(from,to)` 显示终点排除
+
+### §2.8 Wrapper Classes · Boxing / Unboxing
+讲解：`Integer` / `Double`；显式 boxing/unboxing 与 autoboxing/auto-unboxing 并列；32-bit `int` 边界。
+🎛 **沙盘 H `<u2-wrapperlab>` 双转换轨道**
+- 选择 `int ↔ Integer` 或 `double ↔ Double`，并排步进显式与自动路径
+- 展示 `Integer.MIN_VALUE` / `MAX_VALUE`；点按边界运算观察 overflow 回绕，并配找错题
+
+### §2.9 Using the Math Class
+讲解：static class method 调用；`abs`、`pow`、`sqrt`、`random`、`min`、`max`。
+🎛 **沙盘 I `<u2-mathlab>` Math 实验台**
+- 参数可调地运行六类 Math 方法
+- 设定 min/max 并 roll，逐次显示 `Math.random()` 与闭区间整数生成公式
+
+### 🎮 Unit 2 Playground（文末）
+签名综合判定场：constructor 与 method 调用混合练习，点选调用看 signature 匹配与编译结果（以当前 `unit2.html` 实现为准）。
+
+### 📝 精华 Quiz（交互 19 题）
 2-1-3（定义配对）· 2-1-4 · 2-2-14（Cat 构造器 I/II/III）· 2-2-15（Movie 构造）·
 2-3-8（合法调用）· 2-3-9（Meow purr）· 2-4-6（square+divide 输出）·
 2-5-4（square(2)+divide(6,2)）· 2-5-5（编译判定）· 2-13-5（liquid.freeze()）
-其余 21 题 → 折叠速查表。
+2-6 String 不可变 / 拼接 · 2-7 charAt / substring · 2-8 显式与自动转换 / 溢出 / Find-and-Fix · 2-9 Math.min/max / random 范围。速查表逐题链接。
 
 ---
 
@@ -181,6 +205,10 @@ Playground（文末开放全参数的沙盘）
 | `<viz-stepper>`（基类） | §1.4 / §2.3 / §2.5 | 预计算快照数组 + index 步进；行高亮/内存盒/console 三联动；键盘 ◀▶ |
 | `<viz-console>` | 各处复用 | 行逐条 fade-slide 入场；NPE 红色变体 |
 | `<viz-code>` | 所有代码块 | 20 行 Java tokenizer 轻量高亮 |
+| `<u2-string-life>` | §2.6 String 引用 / immutable / escape | 引用与新对象步进、concat 返回值切换、转义输出 |
+| `<u2-string-methods>` | §2.7 String API | 可编辑 String、索引带、方法参数与结果 / 异常 |
+| `<u2-wrapperlab>` | §2.8 Integer / Double | 显式与自动 boxing/unboxing 双轨、int 边界实验 |
+| `<u2-mathlab>` | §2.9 Math | 六类静态方法试算与 random 区间滚动 |
 | 坑点卡 `<warn-note>` | 每节 | 橙虚线圆角卡；>1300px 飘页边 margin note |
 | 速查 `<details>` | 文末 | 原生折叠，零 JS |
 

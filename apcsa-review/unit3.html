@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 3 · Boolean Expressions and if Statements | AP CSA 复习沙盘</title>
+<meta name="description" content="AP CSA Unit 3 可交互复习：Boolean Expressions、if / else-if、短路求值、De Morgan、String 与对象比较。">
+<script>
+  (function () {
+    var p = new URL(location.href).searchParams.get('theme');
+    var s = null; try { s = localStorage.getItem('apcsa-theme'); } catch (e) {}
+    var t = p || s || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<link rel="stylesheet" href="./assets/main.css">
+<link rel="stylesheet" href="./assets/sandbox.css">
+<link rel="stylesheet" href="./assets/u3.css">
+<script type="module" src="./assets/js/unit3.js"></script>
+</head>
+<body data-page="unit3">
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="bar" role="presentation"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<div class="page">
+  <header class="content site-head">
+    <p class="post-meta">AP CSA · Unit 3 · 11–13 课时 · 本页覆盖 3.1–3.7</p>
+    <h1 class="site-title">Unit 3 · Boolean Expressions and if Statements</h1>
+    <p class="lede">从关系运算与真假值开始，把 <code>if</code> 的分支、<code>&amp;&amp;</code> / <code>||</code> 的短路、De Morgan 等价式，直到对象的身份与 String 内容比较，逐步跑成看得见的执行过程。</p>
+    <nav class="unit-nav" aria-label="本页目录">
+      <a class="chip" href="./index.html">⌂ 首页</a>
+      <a class="chip" href="./unit2.html">← Unit 2</a>
+      <a class="chip" href="#s3-1">3.1 Boolean</a>
+      <a class="chip" href="#s3-2">3.2 if</a>
+      <a class="chip" href="#s3-3">3.3 if-else</a>
+      <a class="chip" href="#s3-4">3.4 else-if</a>
+      <a class="chip" href="#s3-5">3.5 Compound</a>
+      <a class="chip" href="#s3-6">3.6 Equivalent</a>
+      <a class="chip" href="#s3-7">3.7 Objects</a>
+      <a class="chip" href="#mixed">综合题</a>
+      <a class="chip" href="#playground">Playground</a>
+      <a class="chip" href="#ref">速查</a>
+    </nav>
+    <div class="quiz-progress" data-quiz-progress aria-live="polite"></div>
+  </header>
+
+  <main id="main" class="content">
+
+    <!-- ==================== §3.1 ==================== -->
+    <section id="s3-1" class="reveal">
+      <h2>3.1 Boolean Expressions · 比较与真假<a class="anchor" href="#s3-1" aria-label="本节的链接">#</a></h2>
+      <p><strong>Boolean expression</strong> 的结果只有 <code>true</code> 或 <code>false</code>。关系运算符比较数值：
+        <code>&lt;</code>、<code>&gt;</code>、<code>&lt;=</code>、<code>&gt;=</code>；<code>==</code> 与 <code>!=</code> 判断相等或不等。
+        这些比较可以写在 <code>if</code> 条件里，也可以先存进 <code>boolean</code> variable。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>比较大小</b><br><code>&lt; &nbsp; &gt; &nbsp; &lt;= &nbsp; &gt;=</code><br>两边是数值或数值表达式</div>
+        <div class="fact"><b>判断相等</b><br><code>== &nbsp; !=</code><br>primitive 比值；reference 比身份</div>
+        <div class="fact"><b>取余数</b><br><code>n % divisor</code><br>整除时余数为 0；可用于偶奇和周期</div>
+        <div class="fact"><b>Boolean 结果</b><br><code>boolean valid = score &gt;= 60;</code><br>variable 保存 true / false</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 A · Boolean Workbench：输入值，读出真假</div>
+        <div class="viz-body"><u3-booleanlab></u3-booleanlab></div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        一个 <code>=</code> 是赋值，两个 <code>==</code> 才是比较。Java 的 <code>%</code> 对负数可能给负余数：
+        判断奇数用 <code>n % 2 != 0</code>，不要用 <code>n % 2 &gt; 0</code>，否则负奇数会被漏掉。
+      </aside>
+
+      <quiz-card qno="3-1-1" id="q-3-1-1">
+        <p class="qhead"><span class="qno">Quiz 3-1-1 · 余数与负数</span></p>
+        <p class="question">执行下列代码后，<code>odd</code> 与 <code>positiveRemainder</code> 分别是什么？</p>
+        <viz-code>int n = -9;
+boolean odd = n % 2 != 0;
+boolean positiveRemainder = n % 2 &gt; 0;</viz-code>
+        <ul class="options">
+          <li><code>true</code>、<code>true</code></li>
+          <li data-correct><code>true</code>、<code>false</code></li>
+          <li><code>false</code>、<code>true</code></li>
+          <li><code>false</code>、<code>false</code></li>
+        </ul>
+        <p class="explain">Java 中 <code>-9 % 2</code> 的结果是 <code>-1</code>。它不等于 0，所以 <code>odd</code> 为 true；但 <code>-1 &gt; 0</code> 为 false。用“余数非零”判断奇数才能同时覆盖正数和负数。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-1-2" id="q-3-1-2">
+        <p class="qhead"><span class="qno">Quiz 3-1-2 · 关系表达式</span></p>
+        <p class="question"><code>a</code> 与 <code>b</code> 的值如下，<code>matches</code> 的值是什么？</p>
+        <viz-code>int a = 14;
+int b = 5;
+boolean matches = a / b == 2 &amp;&amp; a % b == 4;</viz-code>
+        <ul class="options">
+          <li data-correct><code>true</code></li>
+          <li><code>false</code></li>
+          <li><code>2</code></li>
+          <li>编译错误：boolean 不能使用 <code>&amp;&amp;</code></li>
+        </ul>
+        <p class="explain"><code>14 / 5</code> 是整数除法，商为 2；<code>14 % 5</code> 的余数为 4。两个比较都为 true，所以 <code>true &amp;&amp; true</code> 得 true。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.2 ==================== -->
+    <section id="s3-2" class="reveal">
+      <h2>3.2 if Statements · 单向选择<a class="anchor" href="#s3-2" aria-label="本节的链接">#</a></h2>
+      <p><code>if</code> 先计算括号里的 Boolean condition：为 true 就执行对应语句块；为 false 就跳过该块，继续运行后面的代码。缩进方便人读，花括号才真正决定哪些语句属于这个分支。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>Condition</b><br>必须是 Boolean 表达式</div>
+        <div class="fact"><b>为 true</b><br>进入 <code>{ }</code> 中的代码块</div>
+        <div class="fact"><b>为 false</b><br>跳过代码块，不会跳过块之后的语句</div>
+        <div class="fact"><b>顺序执行</b><br>多个独立的 <code>if</code> 会分别检查条件</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 B · If Flow Inspector：条件通过了吗？</div>
+        <div class="viz-body"><u3-iflab></u3-iflab></div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        不要写 <code>if (condition);</code>：分号会成为空语句，后面的块不再受条件控制。也不要把赋值 <code>=</code> 写进比较条件；例如 <code>if (score = 60)</code> 会因类型不匹配而无法编译。
+      </aside>
+
+      <quiz-card qno="3-2-1" id="q-3-2-1">
+        <p class="qhead"><span class="qno">Quiz 3-2-1 · 单向 if</span></p>
+        <p class="question">下面代码输出什么？</p>
+        <viz-code>int n = 0;
+if (n &lt; 0)
+{
+    System.out.print("low ");
+}
+System.out.print("ready");</viz-code>
+        <ul class="options">
+          <li><code>low ready</code></li>
+          <li data-correct><code>ready</code></li>
+          <li>什么都不输出</li>
+          <li><code>low</code></li>
+        </ul>
+        <p class="explain"><code>0 &lt; 0</code> 为 false，因此跳过 <code>low</code> 那行；<code>if</code> 块后面的 <code>print("ready")</code> 不属于该块，仍会执行。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-2-2" id="q-3-2-2">
+        <p class="qhead"><span class="qno">Quiz 3-2-2 · 修正条件</span></p>
+        <p class="question">希望仅在 <code>score</code> 大于或等于 60 时打印 <code>Pass</code>。哪段代码正确？</p>
+        <ul class="options">
+          <li><code>if (score &gt;= 60); { System.out.println("Pass"); }</code></li>
+          <li><code>if (score = 60) { System.out.println("Pass"); }</code></li>
+          <li data-correct><code>if (score &gt;= 60) { System.out.println("Pass"); }</code></li>
+          <li><code>if (score &gt; 60) { System.out.println("Pass"); }</code></li>
+        </ul>
+        <p class="explain">C 使用比较运算符并包含边界 60。A 虽可编译，但分号结束了 <code>if</code>，块会无条件执行；B 把赋值当比较且类型不匹配；D 漏掉刚好 60 的情况。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.3 ==================== -->
+    <section id="s3-3" class="reveal">
+      <h2>3.3 if-else Statements · 双向选择<a class="anchor" href="#s3-3" aria-label="本节的链接">#</a></h2>
+      <p>当 Boolean condition 为 true 时执行 <code>if</code> 块，否则执行 <code>else</code> 块；同一次执行只会走其中一条路。嵌套 if 可以在已选中的路径里再做一次选择，例如先判断是否为哺乳动物，再决定下一问。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>两条路</b><br>条件 true → if；条件 false → else</div>
+        <div class="fact"><b>每次只走一条</b><br>if/else 两边不会同时执行</div>
+        <div class="fact"><b>嵌套选择</b><br>内层条件只在外层进入后才检查</div>
+        <div class="fact"><b>分支之后</b><br>离开整个结构后继续顺序执行</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 C · Two-Way Branch：沿条件树走一遍</div>
+        <div class="viz-body"><u3-ifelse-lab></u3-ifelse-lab></div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        花括号是追踪嵌套结构的可靠边界。先标出外层分支，再进入其中的内层 if；不要只凭缩进猜测哪一个 <code>else</code> 属于哪一个 <code>if</code>。
+      </aside>
+
+      <quiz-card qno="3-3-1" id="q-3-3-1">
+        <p class="qhead"><span class="qno">Quiz 3-3-1 · 嵌套 if</span></p>
+        <p class="question">下列代码会输出什么？</p>
+        <viz-code>boolean mammal = false;
+boolean pet = true;
+if (mammal)
+{
+    if (pet) System.out.println("dog");
+    else System.out.println("elephant");
+}
+else System.out.println("bird");</viz-code>
+        <ul class="options">
+          <li><code>dog</code></li>
+          <li><code>elephant</code></li>
+          <li data-correct><code>bird</code></li>
+          <li><code>bird</code> 后接 <code>dog</code></li>
+        </ul>
+        <p class="explain">外层 <code>mammal</code> 为 false，直接走外层 <code>else</code> 输出 <code>bird</code>。内层的 <code>pet</code> 条件根本不会被检查。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.4 ==================== -->
+    <section id="s3-4" class="reveal">
+      <h2>3.4 else-if Statements · 多路分支<a class="anchor" href="#s3-4" aria-label="本节的链接">#</a></h2>
+      <p><code>if / else if / else</code> 用于多路选择：从上向下检查，执行<strong>第一个为真的分支</strong>后，整条链就结束。条件顺序因此很重要；把多个独立 <code>if</code> 改成 else-if，常常正是修复“后面的赋值覆盖前面结果”的关键。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>从上往下检查</b><br>逐一求值条件</div>
+        <div class="fact"><b>首个 true 即停</b><br>后续 else-if 不再执行</div>
+        <div class="fact"><b>else 可兜底</b><br>之前条件全为 false 才会走到</div>
+        <div class="fact"><b>独立 if 不同</b><br>多个 if 可以依次执行并覆写状态</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 D · Branch Ladder：同一个分数，两种写法</div>
+        <div class="viz-body"><u3-elseif-lab></u3-elseif-lab></div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        若按分数从高到低分档，使用有序的 else-if 链。多个独立 if 可能不断改写同一个变量；尤其要看 <code>else</code> 配对的是哪一个 <code>if</code>。
+      </aside>
+
+      <quiz-card qno="3-4-1" id="q-3-4-1">
+        <p class="qhead"><span class="qno">Quiz 3-4-1 · 首个为真的分支</span></p>
+        <p class="question"><code>x</code> 为 0 时，输出什么？</p>
+        <viz-code>if (x &lt; 0)
+    System.out.println("negative");
+else if (x &lt;= 0)
+    System.out.println("zero");
+else
+    System.out.println("positive");</viz-code>
+        <ul class="options">
+          <li><code>negative</code></li>
+          <li data-correct><code>zero</code></li>
+          <li><code>positive</code></li>
+          <li>没有输出</li>
+        </ul>
+        <p class="explain">第一项 <code>0 &lt; 0</code> 为 false；第二项 <code>0 &lt;= 0</code> 为 true，于是输出 <code>zero</code>，链条随即结束。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-4-2" id="q-3-4-2">
+        <p class="qhead"><span class="qno">Quiz 3-4-2 · 独立 if 会覆写</span></p>
+        <p class="question">下面的独立 <code>if</code> 代码最终打印什么？</p>
+        <viz-code>int score = 86;
+String grade = "?";
+if (score &gt;= 90) grade = "A";
+if (score &gt;= 80) grade = "B";
+if (score &gt;= 70) grade = "C";
+if (score &gt;= 60) grade = "D";
+else grade = "F";
+System.out.println(grade);</viz-code>
+        <ul class="options">
+          <li><code>A</code></li>
+          <li><code>B</code></li>
+          <li><code>C</code></li>
+          <li data-correct><code>D</code></li>
+        </ul>
+        <p class="explain">分数 86 让第二、第三、第四个 if 都为 true，<code>grade</code> 依次被改成 B、C、D。最后一个 if 的 else 只在 <code>score &lt; 60</code> 时执行；因此最终打印 D。改成 else-if 链才会保留首个匹配的 B。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.5 ==================== -->
+    <section id="s3-5" class="reveal">
+      <h2>3.5 Compound Boolean Expressions · 复合条件<a class="anchor" href="#s3-5" aria-label="本节的链接">#</a></h2>
+      <p>用 <code>!</code> 取反、<code>&amp;&amp;</code> 表示“且”、<code>||</code> 表示“或”，可以把条件组合起来。优先级是 <strong><code>!</code> 高于 <code>&amp;&amp;</code>，<code>&amp;&amp;</code> 高于 <code>||</code></strong>；括号优先级最高。<code>&amp;&amp;</code> 与 <code>||</code> 还会进行 short-circuit evaluation（短路求值）。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b><code>!P</code></b><br>反转 true / false</div>
+        <div class="fact"><b><code>P &amp;&amp; Q</code></b><br>两边都 true 才是 true</div>
+        <div class="fact"><b><code>P || Q</code></b><br>至少一边 true 就是 true</div>
+        <div class="fact"><b>优先级</b><br><code>! → &amp;&amp; → ||</code>；必要时加括号</div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 E · Logic &amp; Short-Circuit Lab</div>
+        <div class="viz-body"><u3-logiclab></u3-logiclab></div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        <code>false &amp;&amp; rhs</code> 会跳过 <code>rhs</code>；<code>true || rhs</code> 也会跳过 <code>rhs</code>。只有左侧不足以决定结果时，Java 才会计算右侧。顺序写反，可能让本来可避免的除零或 null 调用发生。
+      </aside>
+
+      <quiz-card qno="3-5-1" id="q-3-5-1">
+        <p class="qhead"><span class="qno">Quiz 3-5-1 · 优先级</span></p>
+        <p class="question">表达式 <code>!a || b &amp;&amp; !c</code> 的结果是什么？</p>
+        <viz-code>boolean a = true;
+boolean b = false;
+boolean c = false;
+boolean result = !a || b &amp;&amp; !c;</viz-code>
+        <ul class="options">
+          <li><code>true</code></li>
+          <li data-correct><code>false</code></li>
+          <li>编译错误：必须给每个运算加括号</li>
+          <li>结果取决于短路是否执行</li>
+        </ul>
+        <p class="explain"><code>!</code> 先算：<code>!a</code> 为 false、<code>!c</code> 为 true；再算 <code>b &amp;&amp; !c</code>，即 false；最后 <code>false || false</code> 为 false。短路不会改变逻辑结果。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-5-2" id="q-3-5-2">
+        <p class="qhead"><span class="qno">Quiz 3-5-2 · && 短路</span></p>
+        <p class="question">当 <code>x</code> 为 0、<code>y</code> 为 7 时，下面代码会发生什么？</p>
+        <viz-code>if (x &gt; 0 &amp;&amp; y / x &gt; 2)
+    System.out.println("yes");
+else
+    System.out.println("safe");</viz-code>
+        <ul class="options">
+          <li>打印 <code>yes</code></li>
+          <li data-correct>打印 <code>safe</code>，不会除以 0</li>
+          <li>抛出 <code>ArithmeticException</code></li>
+          <li>打印 <code>yes</code> 和 <code>safe</code></li>
+        </ul>
+        <p class="explain">左侧 <code>x &gt; 0</code> 为 false，<code>&amp;&amp;</code> 已能确定整个条件为 false，于是跳过 <code>y / x</code>。执行 else，打印 <code>safe</code>。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-5-3" id="q-3-5-3">
+        <p class="qhead"><span class="qno">Quiz 3-5-3 · || 的求值边界</span></p>
+        <p class="question">当 <code>x</code> 为 0、<code>y</code> 为 7 时，下面代码会发生什么？</p>
+        <viz-code>if (x &gt; 0 || y / x &gt; 2)
+    System.out.println("yes");
+else
+    System.out.println("no");</viz-code>
+        <ul class="options">
+          <li>打印 <code>yes</code></li>
+          <li>打印 <code>no</code></li>
+          <li data-correct>抛出 <code>ArithmeticException</code>，右侧会执行</li>
+          <li>右侧被短路，什么都不发生</li>
+        </ul>
+        <p class="explain">左侧 <code>x &gt; 0</code> 为 false；对 <code>||</code> 而言，这还不能确定最终结果，所以 Java 会计算右侧。<code>y / 0</code> 导致运行时 <code>ArithmeticException</code>。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.6 ==================== -->
+    <section id="s3-6" class="reveal">
+      <h2>3.6 Equivalent Boolean Expressions · 等价变形<a class="anchor" href="#s3-6" aria-label="本节的链接">#</a></h2>
+      <p>两个 Boolean expressions 若对<strong>所有可能输入</strong>都得到相同结果，就是等价表达式。De Morgan’s Laws 提供两条常用改写：把 NOT 推进括号时，<code>&amp;&amp;</code> 与 <code>||</code> 互换，且每个项都要取反。否定关系表达式时，比较符也要翻转。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b><code>!(A &amp;&amp; B)</code></b><br>等价于 <code>!A || !B</code></div>
+        <div class="fact"><b><code>!(A || B)</code></b><br>等价于 <code>!A &amp;&amp; !B</code></div>
+        <div class="fact"><b><code>!(x &lt; y)</code></b><br>等价于 <code>x &gt;= y</code></div>
+        <div class="fact"><b><code>!(x &lt;= y)</code></b><br>等价于 <code>x &gt; y</code></div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 F · Equivalence Checker：逐行跑完真值表</div>
+        <div class="viz-body"><u3-equivalence></u3-equivalence></div>
+      </div>
+
+      <aside class="warn">
+        <span class="tag">⚠️ 坑点</span>
+        NOT 推入括号时要同时做两件事：<strong>每个 Boolean term 取反，并把 AND / OR 互换</strong>。关系符取反也要包含边界：<code>!(x &lt;= y)</code> 是 <code>x &gt; y</code>，不是 <code>x &gt;= y</code>。
+      </aside>
+
+      <quiz-card qno="3-6-1" id="q-3-6-1">
+        <p class="qhead"><span class="qno">Quiz 3-6-1 · De Morgan</span></p>
+        <p class="question"><code>!(a || b)</code> 等价于哪一个表达式？</p>
+        <ul class="options">
+          <li><code>!a || !b</code></li>
+          <li data-correct><code>!a &amp;&amp; !b</code></li>
+          <li><code>a &amp;&amp; b</code></li>
+          <li><code>a || b</code></li>
+        </ul>
+        <p class="explain">取反推进 OR 括号后，运算符换成 AND，且两项各自取反：<code>!(a || b) == !a &amp;&amp; !b</code>。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-6-2" id="q-3-6-2">
+        <p class="qhead"><span class="qno">Quiz 3-6-2 · 关系运算符取反</span></p>
+        <p class="question"><code>!(x &lt;= y)</code> 与哪一个表达式完全等价？</p>
+        <ul class="options">
+          <li><code>x &gt;= y</code></li>
+          <li><code>x &lt; y</code></li>
+          <li data-correct><code>x &gt; y</code></li>
+          <li><code>x == y</code></li>
+        </ul>
+        <p class="explain"><code>x &lt;= y</code> 包含小于或相等；其否定必须同时排除这两种情况，所以只剩 <code>x &gt; y</code>。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== §3.7 ==================== -->
+    <section id="s3-7" class="reveal">
+      <h2>3.7 Comparing Objects · 身份、内容与 null<a class="anchor" href="#s3-7" aria-label="本节的链接">#</a></h2>
+      <p>对 primitive，<code>==</code> 比数值；对 reference，<code>==</code> 比两个变量是否指向<strong>同一个 object</strong>。String 内容是否相同，用 <code>.equals()</code>。引用变量还可能是 <code>null</code>，此时调用方法会触发 <code>NullPointerException</code>。</p>
+
+      <div class="fact-grid">
+        <div class="fact"><b>Reference identity</b><br><code>s1 == s2</code>：是否同一个 object</div>
+        <div class="fact"><b>String value</b><br><code>s1.equals(s2)</code>：字符内容是否相同</div>
+        <div class="fact"><b>Alias</b><br><code>s3 = s1</code> 后两个变量指向同一个 object</div>
+        <div class="fact"><b>null guard</b><br>先判 <code>s != null</code>，再调用 <code>s.method()</code></div>
+      </div>
+
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>沙盘 G · Reference &amp; Value：箭头相同，内容也可能相同</div>
+        <div class="viz-body"><u3-objectlab></u3-objectlab></div>
+      </div>
+
+      <aside class="warn float">
+        <span class="tag">⚠️ 坑点</span>
+        相同 String 字面量可能因 string pool 而共享引用，但这不等于应该用 <code>==</code> 比较文字。考内容相等就用 <code>.equals()</code>。调用 <code>s.equals(...)</code> 前也要确认 <code>s</code> 不是 null。
+      </aside>
+
+      <quiz-card qno="3-7-1" id="q-3-7-1">
+        <p class="qhead"><span class="qno">Quiz 3-7-1 · Alias 与 equals</span></p>
+        <p class="question">执行完代码后，哪一个 Boolean expression 为 true？</p>
+        <viz-code>String s1 = new String("map");
+String s2 = new String("map");
+String s3 = s1;</viz-code>
+        <ul class="options">
+          <li><code>s1 == s2</code></li>
+          <li><code>!s1.equals(s2)</code></li>
+          <li data-correct><code>s1 != s2 &amp;&amp; s1.equals(s2) &amp;&amp; s1 == s3</code></li>
+          <li><code>s2 == s3</code></li>
+        </ul>
+        <p class="explain"><code>s1</code> 与 <code>s2</code> 是两个独立 new 出来的 object，所以 <code>s1 != s2</code>；内容相同，<code>s1.equals(s2)</code> 为 true。<code>s3 = s1</code> 是 alias，因此 <code>s1 == s3</code> 为 true。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-7-2" id="q-3-7-2">
+        <p class="qhead"><span class="qno">Quiz 3-7-2 · null 安全</span></p>
+        <p class="question"><code>s</code> 为 <code>null</code>。下列代码的结果是什么？</p>
+        <viz-code>if (s != null &amp;&amp; s.indexOf("a") &gt;= 0)
+{
+    System.out.println("contains a");
+}</viz-code>
+        <ul class="options">
+          <li>打印 <code>contains a</code></li>
+          <li data-correct>不抛异常，也不打印</li>
+          <li>抛出 <code>NullPointerException</code></li>
+          <li>编译错误：String 不能与 null 比较</li>
+        </ul>
+        <p class="explain">左侧 <code>s != null</code> 为 false，<code>&amp;&amp;</code> 短路跳过右侧的 <code>s.indexOf("a")</code>，所以安全地不进入代码块。若先调用方法再判断 null，就会抛 <code>NullPointerException</code>。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== Integrated practice ==================== -->
+    <section id="mixed" class="reveal">
+      <h2>综合 Practice · 3-12 代表题<a class="anchor" href="#mixed" aria-label="本节的链接">#</a></h2>
+      <p>以下是从课件末尾题组精选的综合追踪题，覆盖条件求值、分支覆盖、等价式和整数除法。题干与代码已整理为可读格式；每题的结论按 Java 规则复核。</p>
+
+      <quiz-card qno="3-12-4" id="q-3-12-4">
+        <p class="qhead"><span class="qno">Quiz 3-12-4 · Short-circuit 综合题</span></p>
+        <p class="question"><code>x = 0</code>、<code>y = 9</code> 时，执行下面代码会发生什么？</p>
+        <viz-code>if (x &gt; 0 || y / x == 3)
+    System.out.println("first case");
+else
+    System.out.println("second case");</viz-code>
+        <ul class="options">
+          <li>打印 <code>first case</code></li>
+          <li>打印 <code>second case</code></li>
+          <li data-correct>求值右侧时抛出 <code>ArithmeticException</code></li>
+          <li>右侧被短路，所以不报错</li>
+        </ul>
+        <p class="explain">对 <code>||</code>，左侧只有为 true 才能短路。<code>x &gt; 0</code> 为 false，因此会计算 <code>y / x</code>；整数除以 0 在运行时抛出 <code>ArithmeticException</code>。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-12-5" id="q-3-12-5">
+        <p class="qhead"><span class="qno">Quiz 3-12-5 · 等价表达式</span></p>
+        <p class="question"><code>!(c || d)</code> 与哪个表达式对所有 Boolean 输入都等价？</p>
+        <ul class="options">
+          <li><code>!c || !d</code></li>
+          <li data-correct><code>!c &amp;&amp; !d</code></li>
+          <li><code>c &amp;&amp; d</code></li>
+          <li><code>c || d</code></li>
+        </ul>
+        <p class="explain">由 De Morgan’s Law，否定 OR 等价于两个否定项的 AND：<code>!(c || d) == !c &amp;&amp; !d</code>。其他选项至少在一组输入下结果不同。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-12-8" id="q-3-12-8" multi>
+        <p class="qhead"><span class="qno">Quiz 3-12-8 · 选出所有正确代码段</span></p>
+        <p class="question">学校按下列标准给分：93 及以上为 A，84–92 为 B，75–83 为 C，低于 75 为 F。哪些代码段能对任意整数 <code>score</code> 正确设置 <code>grade</code>？</p>
+        <viz-code>// I
+if (score &gt;= 93) grade = "A";
+if (score &gt;= 84 &amp;&amp; score &lt; 93) grade = "B";
+if (score &gt;= 75 &amp;&amp; score &lt; 84) grade = "C";
+if (score &lt; 75) grade = "F";
+
+// II
+if (score &gt;= 93) grade = "A";
+if (score &gt;= 84) grade = "B";
+if (score &gt;= 75) grade = "C";
+if (score &lt; 75) grade = "F";
+
+// III
+if (score &gt;= 93) grade = "A";
+else if (score &gt;= 84) grade = "B";
+else if (score &gt;= 75) grade = "C";
+else grade = "F";</viz-code>
+        <ul class="options">
+          <li data-correct>Code segment I</li>
+          <li>Code segment II</li>
+          <li data-correct>Code segment III</li>
+        </ul>
+        <p class="explain">I 的各区间互斥，只有对应区间会赋值；III 是依序选择，首个真分支结束。II 对高分会被后续 if 覆写，例如 95 会依次变成 A、B、C，因此不正确。选出所有正确项：I 和 III。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-12-10" id="q-3-12-10">
+        <p class="qhead"><span class="qno">Quiz 3-12-10 · 顺序执行</span></p>
+        <p class="question">执行完下列代码后，输出是什么？</p>
+        <viz-code>int x = 3;
+int y = 2;
+if (x &gt; 2) x += 5;
+if (y &gt; 1) y++;
+if (x &gt; 2) System.out.print("first ");
+if (y &lt; 3) System.out.print("second ");
+System.out.print("third");</viz-code>
+        <ul class="options">
+          <li><code>first</code></li>
+          <li><code>first second</code></li>
+          <li data-correct><code>first third</code></li>
+          <li><code>second third</code></li>
+        </ul>
+        <p class="explain"><code>x</code> 变成 8，<code>y</code> 变成 3。于是第一个输出条件为 true，第二个 <code>y &lt; 3</code> 为 false，最后一行不受 if 控制仍会输出 <code>third</code>。</p>
+      </quiz-card>
+
+      <quiz-card qno="3-12-11" id="q-3-12-11">
+        <p class="qhead"><span class="qno">Quiz 3-12-11 · 整数除法与 if</span></p>
+        <p class="question"><code>x = 3</code>、<code>y = 2</code> 时，输出是什么？</p>
+        <viz-code>if (y / x &gt; 0)
+    System.out.print("first ");
+System.out.print("second");</viz-code>
+        <ul class="options">
+          <li><code>first second</code></li>
+          <li data-correct><code>second</code></li>
+          <li>什么都不输出</li>
+          <li>抛出 <code>ArithmeticException</code></li>
+        </ul>
+        <p class="explain"><code>y</code> 与 <code>x</code> 都是 int，<code>2 / 3</code> 的整数结果为 0，因此条件 <code>0 &gt; 0</code> 为 false。第一句被跳过，但 <code>if</code> 后的第二句仍会打印 <code>second</code>。</p>
+      </quiz-card>
+    </section>
+
+    <!-- ==================== Playground ==================== -->
+    <section id="playground" class="reveal">
+      <h2>🎮 Playground · 两个条件分支项目<a class="anchor" href="#playground" aria-label="本节的链接">#</a></h2>
+      <p>把本单元的分支逻辑放进小项目里。先选答案/路径，再观察代码和输出；Magic 8 Ball 复用 Unit 2 学过的 <code>Math.random()</code>，Animal Guessing 用嵌套选择树。</p>
+      <div class="viz">
+        <div class="viz-head"><span class="dot"></span>项目台 · Magic 8 Ball 与 Animal Guessing</div>
+        <div class="viz-body"><u3-playground></u3-playground></div>
+      </div>
+    </section>
+
+    <!-- ==================== Quick reference ==================== -->
+    <section id="ref" class="reveal">
+      <h2>📋 本页题目速查<a class="anchor" href="#ref" aria-label="本节的链接">#</a></h2>
+      <p>本页 Quiz 卡一览。点 <strong>Go</strong> 跳到题卡重做；刷新页面可重新开始。</p>
+      <div class="u3-ref-wrap">
+        <table class="ref">
+          <thead><tr><th>题号</th><th>题目大意</th><th>考查知识点</th><th>Go</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">3-1-1</td><td>负数取余与奇数判断</td><td><code>%</code>、余数符号</td><td><a class="chip" href="#q-3-1-1">Go</a></td></tr>
+            <tr><td class="mono">3-1-2</td><td>整数商与余数构成的关系式</td><td>Boolean expression、关系比较</td><td><a class="chip" href="#q-3-1-2">Go</a></td></tr>
+            <tr><td class="mono">3-2-1</td><td>单向 if 与块后语句</td><td>控制流顺序</td><td><a class="chip" href="#q-3-2-1">Go</a></td></tr>
+            <tr><td class="mono">3-2-2</td><td>修正 if 条件与边界</td><td><code>=</code> / <code>==</code>、分号与闭区间</td><td><a class="chip" href="#q-3-2-2">Go</a></td></tr>
+            <tr><td class="mono">3-3-1</td><td>嵌套分支输出</td><td>内层条件是否会被检查</td><td><a class="chip" href="#q-3-3-1">Go</a></td></tr>
+            <tr><td class="mono">3-4-1</td><td>else-if 链的首个真分支</td><td>多路选择与边界</td><td><a class="chip" href="#q-3-4-1">Go</a></td></tr>
+            <tr><td class="mono">3-4-2</td><td>独立 if 覆写 grade</td><td>分支链与顺序赋值</td><td><a class="chip" href="#q-3-4-2">Go</a></td></tr>
+            <tr><td class="mono">3-5-1</td><td>!、&amp;&amp;、|| 组合求值</td><td>运算符优先级</td><td><a class="chip" href="#q-3-5-1">Go</a></td></tr>
+            <tr><td class="mono">3-5-2</td><td>&amp;&amp; 短路避免除零</td><td>左操作数为 false 时跳过 RHS</td><td><a class="chip" href="#q-3-5-2">Go</a></td></tr>
+            <tr><td class="mono">3-5-3</td><td>|| 何时执行右侧</td><td>短路与运行时异常</td><td><a class="chip" href="#q-3-5-3">Go</a></td></tr>
+            <tr><td class="mono">3-6-1</td><td>否定 OR 的等价式</td><td>De Morgan’s Law</td><td><a class="chip" href="#q-3-6-1">Go</a></td></tr>
+            <tr><td class="mono">3-6-2</td><td>否定小于或等于</td><td>关系运算符取反</td><td><a class="chip" href="#q-3-6-2">Go</a></td></tr>
+            <tr><td class="mono">3-7-1</td><td>new String、alias 与 equals</td><td>引用身份与内容相等</td><td><a class="chip" href="#q-3-7-1">Go</a></td></tr>
+            <tr><td class="mono">3-7-2</td><td>null 检查与短路</td><td>NullPointerException 防护</td><td><a class="chip" href="#q-3-7-2">Go</a></td></tr>
+            <tr><td class="mono">3-12-4</td><td>|| 条件中的除零风险</td><td>短路求值</td><td><a class="chip" href="#q-3-12-4">Go</a></td></tr>
+            <tr><td class="mono">3-12-5</td><td>!(c || d) 的等价表达式</td><td>De Morgan</td><td><a class="chip" href="#q-3-12-5">Go</a></td></tr>
+            <tr><td class="mono">3-12-8</td><td>正确的分数区间代码段（多选）</td><td>独立 if 与 else-if</td><td><a class="chip" href="#q-3-12-8">Go</a></td></tr>
+            <tr><td class="mono">3-12-10</td><td>多条 if 的执行与输出顺序</td><td>状态更新与后续语句</td><td><a class="chip" href="#q-3-12-10">Go</a></td></tr>
+            <tr><td class="mono">3-12-11</td><td>整数除法参与条件判断</td><td>truncation 与控制流</td><td><a class="chip" href="#q-3-12-11">Go</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="text-align:center;margin-top:2rem">
+        <a class="btn" style="display:inline-block;padding:.6rem 1.4rem;border-radius:8px;background:var(--btn-bg);color:#fff;text-decoration:none" href="./unit2.html">← Unit 2 · Using Objects</a>
+        <a class="btn" style="display:inline-block;padding:.6rem 1.4rem;border-radius:8px;background:var(--btn-bg);color:#fff;text-decoration:none" href="./index.html">⌂ 首页</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <span>内容整理自 AP CSA Unit 3 Session 1 课堂课件 · 仅供学习复习</span>
+    <button class="btn-ghost" type="button" data-theme-toggle>🌙 Dark</button>
+  </footer>
+</div>
+</body>
+</html>
